@@ -2728,6 +2728,12 @@ def _home_page():
 if "app_page" not in st.session_state:
     st.session_state.app_page = "home"
 
+# The Document AI page can be opened directly from the top-right navigation.
+# Define the authenticated Snowpark session BEFORE non-chat pages are rendered;
+# the previous placement was after this routing block, so _document_ai_page()
+# could reach process_uploaded_document() without a local `session` variable.
+session = st.session_state.get("snowpark_session")
+
 if st.session_state.app_page != "chatbot":
     _top_nav()
     page=st.session_state.app_page
@@ -2742,11 +2748,8 @@ if st.session_state.app_page != "chatbot":
 
 # Chatbot page keeps the existing working Cortex Analyst/document code below.
 
-# Snowpark session used by the existing document-upload and Cortex Analyst
-# code. Authentication creates this object in st.session_state; expose it
-# locally as `session` because the document functions use session.sql(),
-# session.file.put(), session.write_pandas(), etc.
-session = st.session_state.get("snowpark_session")
+# Snowpark session is initialized before page routing so both
+# Document AI and Chatbot can use the authenticated session.
 
 if session is None:
     st.error(
