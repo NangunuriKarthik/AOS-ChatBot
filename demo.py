@@ -336,7 +336,7 @@ st.markdown("""
 # ===================================================================
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
-    st.session_state.username = "PBCS"
+    st.session_state.username = ""
     st.session_state.password = ""
     st.session_state.snowpark_session = None
     st.session_state.snowflake_conn = None
@@ -659,7 +659,7 @@ def _login_page():
 
             st.session_state.username = st.text_input(
                 "Username",
-                value=st.session_state.username,
+                value="",
                 key="login_username",
             )
 
@@ -669,40 +669,12 @@ def _login_page():
                 key="login_password",
             )
 
-            captcha = (
-                f"{st.session_state.captcha_a} + "
-                f"{st.session_state.captcha_b} = ?"
+            login_clicked = st.button(
+                "Sign in to Dilytics",
+                use_container_width=True,
+                type="primary",
+                key="login_submit",
             )
-
-            st.text_input(
-                "Security check",
-                value=captcha,
-                disabled=True,
-                key="login_captcha_question",
-            )
-
-            captcha_answer = st.text_input(
-                "Enter answer",
-                key="login_captcha_answer",
-            )
-
-            b1, b2 = st.columns([4, 1], gap="small")
-
-            with b1:
-                login_clicked = st.button(
-                    "Sign in to Dilytics",
-                    use_container_width=True,
-                    type="primary",
-                    key="login_submit",
-                )
-
-            with b2:
-                refresh_clicked = st.button(
-                    "↻",
-                    help="New CAPTCHA",
-                    use_container_width=True,
-                    key="login_refresh_captcha",
-                )
 
             st.markdown(
                 """
@@ -714,19 +686,10 @@ def _login_page():
                 unsafe_allow_html=True,
             )
 
-    if refresh_clicked:
-        _new_captcha()
-        st.rerun()
-
     if login_clicked:
         try:
-            if int(captcha_answer.strip()) != (
-                st.session_state.captcha_a + st.session_state.captcha_b
-            ):
-                st.error("Incorrect security check. Please try again.")
-            else:
-                with st.spinner("Connecting securely to Snowflake..."):
-                    conn = snowflake.connector.connect(
+            with st.spinner("Connecting securely to Snowflake..."):
+                conn = snowflake.connector.connect(
                         user=st.session_state.username,
                         password=st.session_state.password,
                         account=ACCOUNT,
@@ -738,19 +701,19 @@ def _login_page():
                         schema=SCHEMA,
                     )
 
-                    st.session_state.snowflake_conn = conn
-                    st.session_state.snowpark_session = (
-                        Session.builder
-                        .configs({"connection": conn})
-                        .create()
-                    )
+            st.session_state.snowflake_conn = conn
+            st.session_state.snowpark_session = (
+                Session.builder
+                .configs({"connection": conn})
+                .create()
+            )
 
-                    st.session_state.authenticated = True
+            st.session_state.authenticated = True
 
-                    # Authentication was opened from "Chat with AI",
-                    # so continue directly to the chatbot.
-                    st.session_state.app_page = "chatbot"
-                    st.rerun()
+            # Authentication was opened from "Chat with AI",
+            # so continue directly to the chatbot.
+            st.session_state.app_page = "chatbot"
+            st.rerun()
 
         except Exception as e:
             st.error(f"Authentication failed: {e}")
