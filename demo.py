@@ -1698,6 +1698,64 @@ def _top_nav():
               font-size: 11px;
           }
       }
+
+    /* ================================================================
+       FULL-WIDTH EQUAL MODULE CARDS
+       Three modules share the complete available width equally.
+       The rail remains horizontally scrollable on narrower screens.
+       ================================================================ */
+    .dly-module-rail {
+        width: 100% !important;
+        max-width: none !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        gap: 24px !important;
+        padding: 14px 14px 18px !important;
+        margin: 0 !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        scroll-behavior: smooth !important;
+        scrollbar-width: thin !important;
+    }
+
+    .dly-module-card {
+        flex: 1 1 0 !important;
+        width: 0 !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Make all three cards visually identical in width and height. */
+    .dly-module-card > div,
+    .dly-module-card [data-testid="stVerticalBlock"] {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    @media (max-width: 1150px) {
+        .dly-module-rail {
+            gap: 18px !important;
+        }
+
+        .dly-module-card {
+            flex: 0 0 calc((100% - 36px) / 3) !important;
+            min-width: calc((100% - 36px) / 3) !important;
+        }
+    }
+
+    @media (max-width: 850px) {
+        .dly-module-rail {
+            gap: 16px !important;
+        }
+
+        .dly-module-card {
+            flex: 0 0 78% !important;
+            min-width: 78% !important;
+        }
+    }
     </style>
     """, unsafe_allow_html=True)
 
