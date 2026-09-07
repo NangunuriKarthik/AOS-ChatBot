@@ -1357,100 +1357,199 @@ def _logout():
 
 
 def _top_nav():
-    """Single continuous highlighted header: brand on left, blue nav buttons on right."""
+    """Compact Magezon-style top navigation for the public application pages."""
     st.markdown("""
     <style>
-      /* ONE continuous header box across the full content width */
-      .st-key-dly_main_header {
-          width:100% !important;
-          box-sizing:border-box !important;
-          background:#e7f5ff !important;
-          border:1px solid #b9dcf7 !important;
-          border-radius:12px !important;
-          padding:11px 14px !important;
-          margin:-14px 0 22px 0 !important;
-          min-height:60px !important;
-          box-shadow:0 5px 18px rgba(35,111,177,.10) !important;
+      /* ================================================================
+         Dilytics top navigation
+         Inspired by the compact reference header:
+         - white header
+         - thin blue top border
+         - logo on the left
+         - compact navigation items on the right
+         ================================================================ */
+
+      .dly-main-header {
+          width: 100% !important;
+          height: 57px !important;
+          min-height: 57px !important;
+          box-sizing: border-box !important;
+          display: flex !important;
+          align-items: center !important;
+          background: #ffffff !important;
+          border-top: 4px solid #0878c8 !important;
+          border-bottom: 1px solid #e4e9ef !important;
+          margin: -12px 0 22px 0 !important;
+          padding: 0 22px !important;
+          box-shadow: 0 2px 8px rgba(20,60,100,.06) !important;
       }
+
+      .dly-main-brandline {
+          display: flex;
+          align-items: center;
+          gap: 9px;
+          min-height: 49px;
+          white-space: nowrap;
+      }
+
+      /* DILYTICS logo - same compact footprint as the reference logo */
+      .dly-main-logo-wrap {
+          display: inline-flex;
+          align-items: center;
+          gap: 7px;
+          height: 34px;
+      }
+
+      .dly-main-logo-symbol {
+          width: 29px;
+          height: 29px;
+          border-radius: 6px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: #e51f2b;
+          color: #ffffff;
+          font-size: 17px;
+          font-weight: 900;
+          line-height: 1;
+          box-shadow: 0 2px 5px rgba(229,31,43,.18);
+      }
+
+      .dly-main-logo-text {
+          color: #1769b0;
+          font-size: 18px;
+          line-height: 1;
+          font-weight: 800;
+          letter-spacing: -.35px;
+      }
+
+      .dly-main-logo-sub {
+          display: block;
+          color: #667789;
+          font-size: 6.5px;
+          line-height: 1;
+          font-weight: 700;
+          margin-top: 3px;
+          letter-spacing: .15px;
+      }
+
+      /* Right-side navigation */
+      .st-key-dly_main_header {
+          width: 100% !important;
+          max-width: none !important;
+          box-sizing: border-box !important;
+          background: #ffffff !important;
+          border-top: 4px solid #0878c8 !important;
+          border-bottom: 1px solid #e4e9ef !important;
+          border-radius: 0 !important;
+          padding: 0 22px !important;
+          margin: -12px 0 22px 0 !important;
+          min-height: 57px !important;
+          box-shadow: 0 2px 8px rgba(20,60,100,.06) !important;
+      }
+
       .st-key-dly_main_header > div,
       .st-key-dly_main_header > div > div {
-          box-sizing:border-box !important;
+          box-sizing: border-box !important;
       }
+
       .st-key-dly_main_header [data-testid="column"] {
-          display:flex !important;
-          align-items:center !important;
-          justify-content:center !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
       }
-      .dly-main-brandline {
-          display:flex;
-          align-items:center;
-          gap:8px;
-          min-height:44px;
-          white-space:nowrap;
-      }
-      .dly-main-logo {
-          display:inline-flex;
-          align-items:center;
-          justify-content:center;
-          background:#e51f2b;
-          color:#fff;
-          height:40px;
-          min-width:72px;
-          padding:0 16px;
-          border-radius:3px;
-          font-size:.86rem;
-          font-weight:900;
-          letter-spacing:.2px;
-      }
-      .dly-main-tagline {
-          color:#315f8c;
-          font-size:.61rem;
-          white-space:nowrap;
-      }
-      /* BLUE BUTTON BOXES INSIDE THE SAME HEADER */
+
       .st-key-dly_main_header [data-testid="stButton"] {
-          width:100% !important;
+          width: 100% !important;
       }
+
       .st-key-dly_main_header [data-testid="stButton"] > button {
-          width:100% !important;
-          min-height:34px !important;
-          height:34px !important;
-          padding:0 9px !important;
-          margin:0 !important;
-          border-radius:7px !important;
-          border:1px solid #0878c8 !important;
-          background:#0878c8 !important;
-          color:#fff !important;
-          font-size:.68rem !important;
-          font-weight:700 !important;
-          line-height:1 !important;
-          display:flex !important;
-          align-items:center !important;
-          justify-content:center !important;
-          white-space:nowrap !important;
-          box-shadow:0 2px 5px rgba(8,120,200,.16) !important;
+          width: 100% !important;
+          height: 32px !important;
+          min-height: 32px !important;
+          padding: 0 11px !important;
+          margin: 0 !important;
+          border-radius: 5px !important;
+
+          /* Reference second-image blue */
+          background: #9ac0fb !important;
+          border: 1px solid #8eb7f4 !important;
+          color: #123f78 !important;
+
+          font-size: .72rem !important;
+          font-weight: 700 !important;
+          line-height: 1 !important;
+
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          white-space: nowrap !important;
+
+          box-shadow: 0 2px 5px rgba(65,115,185,.10) !important;
+          transition: all .15s ease-in-out !important;
       }
+
       .st-key-dly_main_header [data-testid="stButton"] > button:hover {
-          background:#066aaF !important;
-          border-color:#066aaF !important;
-          color:#fff !important;
+          background: #87b2f3 !important;
+          border-color: #79a8ed !important;
+          color: #082d69 !important;
+          transform: translateY(-1px);
       }
+
+      /* About Dilytics D-symbol */
+      .dly-about-symbol {
+          width: 20px;
+          height: 20px;
+          margin-right: 5px;
+          border-radius: 4px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: #e51f2b;
+          color: #ffffff;
+          font-size: 12px;
+          font-weight: 900;
+          line-height: 1;
+          vertical-align: middle;
+      }
+
+      .dly-nav-icon {
+          font-size: 14px;
+          margin-right: 4px;
+          line-height: 1;
+      }
+
       @media(max-width:850px){
-          .st-key-dly_main_header { padding:6px !important; }
-          .dly-main-tagline { display:none; }
-          .dly-main-logo { font-size:.76rem; padding:0 11px; }
+          .st-key-dly_main_header {
+              padding: 0 8px !important;
+              margin-bottom: 15px !important;
+          }
+
+          .dly-main-logo-sub {
+              display: none;
+          }
+
+          .dly-main-logo-text {
+              font-size: 16px;
+          }
+
           .st-key-dly_main_header [data-testid="stButton"] > button {
-              font-size:.56rem !important;
-              padding:0 4px !important;
+              font-size: .61rem !important;
+              padding: 0 5px !important;
+          }
+
+          .dly-nav-icon {
+              font-size: 12px;
+              margin-right: 2px;
           }
       }
     </style>
     """, unsafe_allow_html=True)
 
-    # IMPORTANT: every item below is rendered INSIDE this single container.
+    # One compact header, matching the reference layout.
     with st.container(key="dly_main_header"):
-        c1, c2, c3, c4, c5 = st.columns(
-            [2.8, 1.0, 1.55, 1.25, 1.0],
+        c1, c2, c3, c4 = st.columns(
+            [3.15, 1.0, 1.45, 1.45],
             gap="small",
             vertical_alignment="center",
         )
@@ -1458,34 +1557,28 @@ def _top_nav():
         with c1:
             st.markdown(
                 '<div class="dly-main-brandline">'
-                '<span class="dly-main-logo">DILYTICS</span>'
-                '<span class="dly-main-tagline">Data. Insights. Impact.</span>'
+                '<div class="dly-main-logo-wrap">'
+                '<span class="dly-main-logo-symbol">D</span>'
+                '<div>'
+                '<div class="dly-main-logo-text">DILYTICS</div>'
+                '<span class="dly-main-logo-sub">Enterprise AI</span>'
+                '</div>'
+                '</div>'
                 '</div>',
                 unsafe_allow_html=True,
             )
 
         with c2:
-            if st.button("⌂ Home", use_container_width=True, key="top_home"):
+            if st.button("⌂  Home", use_container_width=True, key="top_home"):
                 _set_page("home")
 
         with c3:
-            if st.button("▣ Document AI Demo", use_container_width=True, key="top_docs"):
+            if st.button("▣  Document AI", use_container_width=True, key="top_docs"):
                 _set_page("document_ai")
 
         with c4:
-            if st.button("ⓘ About DiLytics", use_container_width=True, key="top_about"):
+            if st.button("About Dilytics", use_container_width=True, key="top_about"):
                 _set_page("about")
-
-        with c5:
-            username = st.session_state.get("username", "User")
-            if st.button(f"◯ {username}", use_container_width=True, key="top_profile"):
-                st.session_state.show_profile_menu = not st.session_state.get("show_profile_menu", False)
-
-    if st.session_state.get("show_profile_menu"):
-        pc = st.columns([8.0, 1.10])
-        with pc[1]:
-            if st.button("Logout", use_container_width=True, key="top_logout"):
-                _logout()
 
 
 def _module_page(module: str):
