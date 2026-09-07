@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional
 import re
 import yaml
 
-# ==================================================================
+# ===================================================================
 # Configuration
 # ===================================================================
 HOST = "WDSDGTL-XCC29288.snowflakecomputing.com"
@@ -435,17 +435,19 @@ def _login_page():
                     st.session_state.snowflake_conn = conn
                     st.session_state.snowpark_session = Session.builder.configs({"connection": conn}).create()
                     st.session_state.authenticated = True
-                    st.session_state.app_page = "home"
+                    # Authentication was opened from "Chat with AI", so
+                    # continue directly to the chatbot after successful login.
+                    st.session_state.app_page = "chatbot"
                     st.rerun()
         except Exception as e:
             st.error(f"Authentication failed: {e}")
     st.stop()
 
-if not st.session_state.authenticated:
-    _login_page()
-
-session = st.session_state.snowpark_session
-conn = st.session_state.snowflake_conn
+# Do not show the login page on initial app load.
+# The home page is public; authentication is requested only when the
+# user chooses "Chat with AI".
+session = st.session_state.get("snowpark_session")
+conn = st.session_state.get("snowflake_conn")
 
 # ===================================================================
 # 2. CORTEX ANALYST
@@ -1749,6 +1751,7 @@ if st.session_state.app_page != "chatbot":
     _top_nav()
     page=st.session_state.app_page
     if page=="home": _home_page()
+    elif page=="login": _login_page()
     elif page=="inventory": _module_page("inventory")
     elif page=="sales": _module_page("sales")
     elif page=="document_ai": _document_ai_page()
