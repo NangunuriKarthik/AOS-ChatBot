@@ -1935,125 +1935,9 @@ def _home_page():
       }
       .home-stats{
           display:flex;
-          gap:24px;
-          margin-top:22px;
+          gap:35px;
+          margin-top:25px;
           color:#315a88;
-          flex-wrap:wrap;
-      }
-      .home-stat{
-          display:inline-flex;
-          align-items:center;
-          gap:8px;
-          font-size:.79rem;
-          font-weight:650;
-          white-space:nowrap;
-      }
-      .home-stat-icon{
-          width:25px;
-          height:25px;
-          display:inline-flex;
-          align-items:center;
-          justify-content:center;
-          border-radius:7px;
-          background:rgba(255,255,255,.82);
-          border:1px solid #d7eafa;
-          color:#1769d2;
-          box-shadow:0 3px 9px rgba(23,105,210,.06);
-          font-size:.85rem;
-      }
-
-      /* Premium value panel fills the open hero area without competing
-         with the robot visual. */
-      .home-value-panel{
-          margin-top:27px;
-          max-width:690px;
-          padding:17px 18px 16px;
-          border:1px solid rgba(184,218,247,.85);
-          border-radius:16px;
-          background:rgba(255,255,255,.62);
-          box-shadow:
-              0 12px 32px rgba(27,91,151,.055),
-              inset 0 1px 0 rgba(255,255,255,.95);
-          backdrop-filter:blur(8px);
-      }
-      .home-value-head{
-          display:flex;
-          align-items:center;
-          justify-content:space-between;
-          gap:14px;
-          margin-bottom:13px;
-      }
-      .home-value-title{
-          color:#082d69;
-          font-size:.83rem;
-          font-weight:850;
-          letter-spacing:.2px;
-      }
-      .home-live{
-          display:inline-flex;
-          align-items:center;
-          gap:6px;
-          padding:5px 9px;
-          border-radius:999px;
-          background:#effbf5;
-          border:1px solid #cdeedb;
-          color:#16824b;
-          font-size:.67rem;
-          font-weight:800;
-      }
-      .home-live-dot{
-          width:6px;
-          height:6px;
-          border-radius:50%;
-          background:#22a861;
-          box-shadow:0 0 0 3px rgba(34,168,97,.10);
-      }
-      .home-value-grid{
-          display:grid;
-          grid-template-columns:repeat(3,1fr);
-          gap:9px;
-      }
-      .home-value-item{
-          padding:11px 12px;
-          border-radius:11px;
-          background:rgba(248,252,255,.88);
-          border:1px solid #e0edf8;
-      }
-      .home-value-item strong{
-          display:block;
-          color:#0b3c78;
-          font-size:.76rem;
-          font-weight:800;
-          margin-bottom:3px;
-      }
-      .home-value-item span{
-          display:block;
-          color:#66819f;
-          font-size:.65rem;
-          line-height:1.35;
-      }
-
-      .home-capability-row{
-          display:flex;
-          gap:8px;
-          flex-wrap:wrap;
-          margin-top:12px;
-      }
-      .home-capability{
-          display:inline-flex;
-          align-items:center;
-          gap:6px;
-          padding:7px 10px;
-          border-radius:9px;
-          background:rgba(255,255,255,.72);
-          border:1px solid #dcecf9;
-          color:#41688f;
-          font-size:.66rem;
-          font-weight:700;
-      }
-      .home-capability b{
-          color:#1769d2;
-          font-size:.72rem;
       }
 
       /* Scrollable module rail. Streamlit's horizontal container keeps
@@ -2257,8 +2141,6 @@ def _home_page():
           .home-robot-img{width:310px}
           .bubble{right:0}
           .home-stats{gap:14px;flex-wrap:wrap}
-          .home-value-panel{max-width:none}
-          .home-value-grid{grid-template-columns:1fr}
       }
 
       /* Full-width equal module cards inside the horizontal rail. */
@@ -2291,41 +2173,8 @@ def _home_page():
       <div>
         <div class="home-eyebrow">WELCOME TO DILYTICS</div>
         <div class="home-title">Your AI-Powered<br><span>Data Companion</span></div>
-        <div class="home-sub">Ask questions, explore insights, and make smarter decisions with the power of your data — all from one intelligent workspace.</div>
-
-        <div class="home-stats">
-          <span class="home-stat"><span class="home-stat-icon">▥</span> Insights Made Simple</span>
-          <span class="home-stat"><span class="home-stat-icon">ϟ</span> Faster Decisions</span>
-          <span class="home-stat"><span class="home-stat-icon">✓</span> Secure &amp; Governed</span>
-        </div>
-
-        <div class="home-value-panel">
-          <div class="home-value-head">
-            <span class="home-value-title">One workspace. Multiple intelligence layers.</span>
-            <span class="home-live"><i class="home-live-dot"></i> AI Workspace Ready</span>
-          </div>
-
-          <div class="home-value-grid">
-            <div class="home-value-item">
-              <strong>Natural-Language Analytics</strong>
-              <span>Ask business questions in plain English and explore governed insights.</span>
-            </div>
-            <div class="home-value-item">
-              <strong>Operational Intelligence</strong>
-              <span>Connect inventory, sales and supply chain decisions in one view.</span>
-            </div>
-            <div class="home-value-item">
-              <strong>Document Intelligence</strong>
-              <span>Bring documents into the conversation and turn information into answers.</span>
-            </div>
-          </div>
-
-          <div class="home-capability-row">
-            <span class="home-capability"><b>◈</b> Snowflake Powered</span>
-            <span class="home-capability"><b>↗</b> Real-Time Insights</span>
-            <span class="home-capability"><b>◇</b> Enterprise Ready</span>
-          </div>
-        </div>
+        <div class="home-sub">Ask questions, explore insights, and make smarter decisions with the power of your data.</div>
+        <div class="home-stats"><span>▮ Insights Made Simple</span><span>⚡ Faster Decisions</span><span>✓ Secure & Compliant</span></div>
       </div>
       <div class="home-robot">
         <div class="orb"><img class="home-robot-img" src="{robot_src}" alt="Dilytics AI assistant" /></div>
@@ -2337,7 +2186,7 @@ def _home_page():
     st.markdown(
         '<div class="dly-module-rail-hint">'
         '<span>Explore our intelligence modules</span>'
-        '<span>← Scroll horizontally to view Supply Chain →</span>'
+        '<span>← Scroll horizontally to view more modules →</span>'
         '</div>',
         unsafe_allow_html=True,
     )
