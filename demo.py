@@ -2776,6 +2776,17 @@ if "current_session_id" not in st.session_state:
 current_id = st.session_state.current_session_id
 messages = st.session_state.chat_sessions[current_id]["messages"]
 
+# A top-right Document AI upload reaches the chatbot through a rerun.
+# Consume its pending event here, after `messages` definitely exists.
+pending_doc_event = st.session_state.pop("pending_document_chat_event", None)
+if pending_doc_event:
+    doc_name = pending_doc_event.get("document_name")
+    already_added = any(
+        m.get("document_event") and m.get("document_name") == doc_name
+        for m in messages
+    )
+    if not already_added:
+        messages.append(pending_doc_event)
 
 # ===================================================================
 # 4. CHART DISPLAY
@@ -2928,23 +2939,11 @@ with st.sidebar:
                     if uploaded_doc.name.lower().endswith(".pdf"):
                         _upload_document_to_stage(uploaded_doc)
 
-            # Keep document analysis inside the current conversation timeline.
-            # The upload is an event in the chat, so it appears exactly where
-            # it happened instead of being rendered above the old messages.
-            # The chat session is initialized here as well because the upload
-            # controls are rendered before the main chat-session block below.
-            if "chat_sessions" not in st.session_state:
-                st.session_state.chat_sessions = {}
-            if "current_session_id" not in st.session_state:
-                init_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-                st.session_state.current_session_id = init_id
-                st.session_state.chat_sessions[init_id] = {
-                    "title": "New Conversation",
-                    "messages": [],
-                }
-            current_id = st.session_state.current_session_id
-            messages_for_event = st.session_state.chat_sessions[current_id]["messages"]
-            messages_for_event.append({
+            # Store a pending chat event. The chatbot consumes this AFTER
+            # its session/messages object has been initialized. This is more
+            # reliable than appending directly here because this page calls
+            # st.rerun() and then stops before the chatbot section.
+            st.session_state.pending_document_chat_event = {
                 "role": "assistant",
                 "content": f"📄 **Document analyzed:** `{uploaded_doc.name}`\n\n{doc_message}",
                 "sql": None,
@@ -2954,9 +2953,9 @@ with st.sidebar:
                 "document_event": True,
                 "document_name": uploaded_doc.name,
                 "document_type": doc_type,
-            })
+            }
 
-            st.success(doc_message)
+            st.session_state.app_page = "chatbot"
             st.rerun()
         except Exception as e:
             st.error(f"Document analysis failed: {e}")
@@ -3245,7 +3244,7 @@ for idx, msg in enumerate(messages):
                 # Keep the uploaded-file preview visible directly in the chat.
                 # This makes the upload event useful even before the user asks
                 # a question about the document.
-                if current_df is not None and doc_name == st.session_state.uploaded_document_name:
+                if current_df is not None:
                     st.markdown("**📊 Uploaded data preview**")
                     preview_df = _normalize_uploaded_dataframe(current_df)
                     st.dataframe(
@@ -3260,7 +3259,7 @@ for idx, msg in enumerate(messages):
                     )
             elif doc_type == "text":
                 current_text = st.session_state.uploaded_document_text
-                if current_text and doc_name == st.session_state.uploaded_document_name:
+                if current_text:
                     st.markdown("**📖 Uploaded document preview**")
                     # Keep the chat compact while showing the beginning of the
                     # extracted document immediately.
