@@ -1698,64 +1698,6 @@ def _top_nav():
               font-size: 11px;
           }
       }
-
-    /* ================================================================
-       FULL-WIDTH EQUAL MODULE CARDS
-       Three modules share the complete available width equally.
-       The rail remains horizontally scrollable on narrower screens.
-       ================================================================ */
-    .dly-module-rail {
-        width: 100% !important;
-        max-width: none !important;
-        box-sizing: border-box !important;
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        gap: 24px !important;
-        padding: 14px 14px 18px !important;
-        margin: 0 !important;
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
-        scroll-behavior: smooth !important;
-        scrollbar-width: thin !important;
-    }
-
-    .dly-module-card {
-        flex: 1 1 0 !important;
-        width: 0 !important;
-        min-width: 0 !important;
-        max-width: none !important;
-        box-sizing: border-box !important;
-    }
-
-    /* Make all three cards visually identical in width and height. */
-    .dly-module-card > div,
-    .dly-module-card [data-testid="stVerticalBlock"] {
-        width: 100% !important;
-        box-sizing: border-box !important;
-    }
-
-    @media (max-width: 1150px) {
-        .dly-module-rail {
-            gap: 18px !important;
-        }
-
-        .dly-module-card {
-            flex: 0 0 calc((100% - 36px) / 3) !important;
-            min-width: calc((100% - 36px) / 3) !important;
-        }
-    }
-
-    @media (max-width: 850px) {
-        .dly-module-rail {
-            gap: 16px !important;
-        }
-
-        .dly-module-card {
-            flex: 0 0 78% !important;
-            min-width: 78% !important;
-        }
-    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -2200,6 +2142,32 @@ def _home_page():
           .bubble{right:0}
           .home-stats{gap:14px;flex-wrap:wrap}
       }
+
+      /* Full-width equal module cards inside the horizontal rail. */
+      .st-key-inventory_card,
+      .st-key-sales_card,
+      .st-key-supply_chain_card{
+          width:100% !important;
+          min-width:0 !important;
+          box-sizing:border-box !important;
+      }
+
+      .st-key-inventory_card > div,
+      .st-key-sales_card > div,
+      .st-key-supply_chain_card > div{
+          width:100% !important;
+          box-sizing:border-box !important;
+      }
+
+      /* On smaller screens, allow the rail to overflow horizontally
+         rather than compressing the cards. */
+      @media(max-width:1100px){
+          .st-key-inventory_card,
+          .st-key-sales_card,
+          .st-key-supply_chain_card{
+              min-width:420px !important;
+          }
+      }
     </style>
     <div class="home-hero">
       <div>
@@ -2224,8 +2192,9 @@ def _home_page():
     )
 
     # A horizontal Streamlit container keeps all three cards in one row.
-    # Each card has a fixed width so the rail becomes horizontally scrollable
-    # instead of shrinking the cards into a three-column grid.
+    # On desktop, stretch-width cards share the full available width equally.
+    # On narrower screens, the cards retain a readable minimum width and the
+    # rail can be scrolled horizontally.
     try:
         module_rail = st.container(
             horizontal=True,
@@ -2233,13 +2202,14 @@ def _home_page():
             horizontal_alignment="left",
             vertical_alignment="top",
             height=500,
+            width="stretch",
         )
     except TypeError:
         # Compatibility fallback for older Streamlit versions.
         module_rail = st.container()
 
     with module_rail:
-        with st.container(key="inventory_card", width=430):
+        with st.container(key="inventory_card", width="stretch"):
             st.markdown("""
             <div class="module-card-container">
               <h2>▦ &nbsp; Inventory Intelligence</h2>
@@ -2262,7 +2232,7 @@ def _home_page():
                     _open_chat()
             st.markdown('</div>', unsafe_allow_html=True)
 
-        with st.container(key="sales_card", width=430):
+        with st.container(key="sales_card", width="stretch"):
             st.markdown("""
             <div class="module-card-container">
               <h2>▥ &nbsp; Sales Intelligence</h2>
@@ -2285,7 +2255,7 @@ def _home_page():
                     _open_chat()
             st.markdown('</div>', unsafe_allow_html=True)
 
-        with st.container(key="supply_chain_card", width=430):
+        with st.container(key="supply_chain_card", width="stretch"):
             st.markdown("""
             <div class="module-card-container">
               <h2>🚚 &nbsp; Supply Chain Intelligence</h2>
