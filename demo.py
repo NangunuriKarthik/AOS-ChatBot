@@ -1373,9 +1373,8 @@ def _top_nav():
           max-width: none !important;
           box-sizing: border-box !important;
 
-          background: #ffffff !important;
+          background: transparent !important;
           border: 0 !important;
-          border-bottom: 1px solid #edf1f5 !important;
           border-radius: 0 !important;
 
           padding: 14px 58px !important;
@@ -1384,7 +1383,7 @@ def _top_nav():
           position: relative !important;
           z-index: 20 !important;
 
-          box-shadow: 0 2px 10px rgba(20,45,80,.035) !important;
+          box-shadow: none !important;
       }
 
       .st-key-dly_main_header > div,
@@ -1480,8 +1479,8 @@ def _top_nav():
           color: #171717 !important;
 
           font-family: "Inter", "Segoe UI", Arial, sans-serif !important;
-          font-size: .88rem !important;
-          font-weight: 650 !important;
+          font-size: .96rem !important;
+          font-weight: 800 !important;
           letter-spacing: 0 !important;
 
           display: flex !important;
@@ -1548,9 +1547,9 @@ def _top_nav():
       .st-key-top_home [data-testid="stButton"] > button::before,
       .st-key-top_docs [data-testid="stButton"] > button::before,
       .st-key-top_about [data-testid="stButton"] > button::before {
-          width: 29px;
-          height: 29px;
-          flex: 0 0 29px;
+          width: 33px;
+          height: 33px;
+          flex: 0 0 33px;
 
           margin-right: 12px;
 
@@ -1560,7 +1559,7 @@ def _top_nav():
 
           border-radius: 7px;
 
-          font-size: 16px;
+          font-size: 18px;
           font-weight: 900;
           line-height: 1;
       }
@@ -1571,7 +1570,7 @@ def _top_nav():
           background: #f5f7fa;
           color: #111827;
 
-          font-size: 20px;
+          font-size: 22px;
 
           box-shadow: inset 0 0 0 1px #e5e9ee;
       }
@@ -1582,7 +1581,7 @@ def _top_nav():
           background: #f5f7fa;
           color: #111827;
 
-          font-size: 17px;
+          font-size: 19px;
 
           box-shadow: inset 0 0 0 1px #e5e9ee;
       }
@@ -1593,7 +1592,7 @@ def _top_nav():
           background: #ffffff;
           color: #d7202b;
 
-          font-size: 16px;
+          font-size: 18px;
 
           box-shadow:
               0 1px 5px rgba(0,0,0,.15),
@@ -1635,15 +1634,16 @@ def _top_nav():
               height: 48px !important;
               min-height: 48px !important;
               padding: 0 10px !important;
-              font-size: .72rem !important;
+              font-size: .80rem !important;
+          font-weight: 800 !important;
           }
 
           .st-key-top_home [data-testid="stButton"] > button::before,
           .st-key-top_docs [data-testid="stButton"] > button::before,
           .st-key-top_about [data-testid="stButton"] > button::before {
-              width: 23px;
-              height: 23px;
-              flex-basis: 23px;
+              width: 26px;
+              height: 26px;
+              flex-basis: 26px;
               margin-right: 7px;
           }
       }
