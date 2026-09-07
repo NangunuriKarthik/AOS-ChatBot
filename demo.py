@@ -2186,7 +2186,7 @@ def _home_page():
     st.markdown(
         '<div class="dly-module-rail-hint">'
         '<span>Explore our intelligence modules</span>'
-        '<span>← Scroll horizontally to view Supply Chain →</span>'
+        '<span>← Scroll horizontally to view more modules →</span>'
         '</div>',
         unsafe_allow_html=True,
     )
