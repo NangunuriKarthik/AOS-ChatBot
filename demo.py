@@ -2317,7 +2317,6 @@ def _home_page():
 
         with st.container(border=True):
             st.markdown("### One workspace. Multiple intelligence layers.")
-            st.caption("🟢 AI Workspace Ready")
 
             c1, c2, c3 = st.columns(3, gap="small")
             with c1:
