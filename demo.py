@@ -2290,68 +2290,65 @@ def _home_page():
     </style>
         """, unsafe_allow_html=True)
 
+    # ------------------------------------------------------------
+    # HERO — native Streamlit layout
+    # ------------------------------------------------------------
+    hero_left, hero_right = st.columns([1.05, 0.95], gap="large")
 
-    st.markdown(
-        """
-        <div class="home-hero">
-          <div>
-            <div class="home-eyebrow">WELCOME TO DILYTICS</div>
-            <div class="home-title">Your AI-Powered<br><span>Data Companion</span></div>
-            <div class="home-sub">
-              Ask questions, explore insights, and make smarter decisions with
-              the power of your data — all from one intelligent workspace.
-            </div>
+    with hero_left:
+        st.markdown('<div class="home-eyebrow">WELCOME TO DILYTICS</div>', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="home-title">Your AI-Powered<br><span>Data Companion</span></div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<div class="home-sub">Ask questions, explore insights, and make smarter decisions '
+            'with the power of your data — all from one intelligent workspace.</div>',
+            unsafe_allow_html=True,
+        )
 
-            <div class="home-stats">
-              <span class="home-stat"><span class="home-stat-icon">▥</span> Insights Made Simple</span>
-              <span class="home-stat"><span class="home-stat-icon">ϟ</span> Faster Decisions</span>
-              <span class="home-stat"><span class="home-stat-icon">✓</span> Secure &amp; Governed</span>
-            </div>
-          </div>
+        stat1, stat2, stat3 = st.columns(3, gap="small")
+        with stat1:
+            st.markdown("**▥  Insights Made Simple**")
+        with stat2:
+            st.markdown("**ϟ  Faster Decisions**")
+        with stat3:
+            st.markdown("**✓  Secure & Governed**")
 
-          <div class="home-robot">
-            <div class="orb">
-              <img class="home-robot-img" src="{robot_src}" alt="Dilytics AI assistant" />
-            </div>
-            <div class="bubble"><b>Hi!</b><br>How can I help you<br>today?</div>
-          </div>
-        </div>
-        """.replace("{robot_src}", _robot_data_uri()),
-        unsafe_allow_html=True,
-    )
+        with st.container(border=True):
+            st.markdown("### One workspace. Multiple intelligence layers.")
+            st.caption("🟢 AI Workspace Ready")
 
-    st.markdown(
-        """
-        <div class="home-value-panel">
-          <div class="home-value-head">
-            <span class="home-value-title">One workspace. Multiple intelligence layers.</span>
-            <span class="home-live"><i class="home-live-dot"></i> AI Workspace Ready</span>
-          </div>
+            c1, c2, c3 = st.columns(3, gap="small")
+            with c1:
+                st.markdown("**Natural-Language Analytics**")
+                st.caption("Ask business questions in plain English and explore governed insights.")
+            with c2:
+                st.markdown("**Operational Intelligence**")
+                st.caption("Connect inventory, sales and supply chain decisions in one view.")
+            with c3:
+                st.markdown("**Document Intelligence**")
+                st.caption("Bring documents into the conversation and turn information into answers.")
 
-          <div class="home-value-grid">
-            <div class="home-value-item">
-              <strong>Natural-Language Analytics</strong>
-              <span>Ask business questions in plain English and explore governed insights.</span>
-            </div>
-            <div class="home-value-item">
-              <strong>Operational Intelligence</strong>
-              <span>Connect inventory, sales and supply chain decisions in one view.</span>
-            </div>
-            <div class="home-value-item">
-              <strong>Document Intelligence</strong>
-              <span>Bring documents into the conversation and turn information into answers.</span>
-            </div>
-          </div>
+            p1, p2, p3 = st.columns(3, gap="small")
+            with p1:
+                st.markdown("◈ **Snowflake Powered**")
+            with p2:
+                st.markdown("↗ **Real-Time Insights**")
+            with p3:
+                st.markdown("◇ **Enterprise Ready**")
 
-          <div class="home-capability-row">
-            <span class="home-capability"><b>◈</b> Snowflake Powered</span>
-            <span class="home-capability"><b>↗</b> Real-Time Insights</span>
-            <span class="home-capability"><b>◇</b> Enterprise Ready</span>
-          </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    with hero_right:
+        robot_html = (
+            '<div class="home-robot">'
+            '<div class="orb">'
+            '<img class="home-robot-img" src="' + _robot_data_uri() + '" alt="Dilytics AI assistant" />'
+            '</div>'
+            '<div class="bubble"><b>Hi!</b><br>How can I help you<br>today?</div>'
+            '</div>'
+        )
+        st.markdown(robot_html, unsafe_allow_html=True)
+
 
     st.markdown(
         '<div class="dly-module-rail-hint">'
