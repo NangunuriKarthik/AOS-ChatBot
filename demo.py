@@ -497,19 +497,21 @@ def _login_page():
       .login-float.two{right:7%;top:23%;animation-delay:1s}
       .login-float.three{bottom:15%;left:11%;animation-delay:2s}
 
-      .login-form-card{
+      /* Match the sign-in card background to the white premium AI card */
+      .st-key-login_form_card{
           min-height:650px !important;
           height:650px !important;
           box-sizing:border-box !important;
           padding:38px 30px !important;
-          background:rgba(255,255,255,.97) !important;
+          background:linear-gradient(145deg,#ffffff 0%,#f2f9ff 100%) !important;
           border:1px solid #d8ebff !important;
           border-radius:24px !important;
           box-shadow:0 24px 70px rgba(19,82,145,.12) !important;
-          display:flex !important;
-          flex-direction:column !important;
-          justify-content:center !important;
           overflow:hidden !important;
+      }
+
+      .st-key-login_form_card > div{
+          background:transparent !important;
       }
 
       .login-form-badge{
