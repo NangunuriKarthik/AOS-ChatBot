@@ -504,20 +504,6 @@ def _login_page():
       .login-float.three{bottom:15%;left:11%;animation-delay:2s}
 
       /* Right 30% login card */
-      .login-side-card {
-          min-height:650px;
-          height:650px;
-          box-sizing:border-box;
-          padding:38px 32px;
-          background:rgba(255,255,255,.94);
-          border:1px solid #dcecff;
-          border-radius:20px;
-          box-shadow:0 18px 48px rgba(19,82,145,.09);
-          display:flex;
-          flex-direction:column;
-          justify-content:center;
-      }
-
       .login-side-badge {
           display:inline-flex;
           width:max-content;
@@ -566,6 +552,43 @@ def _login_page():
       @keyframes robotFloat{50%{transform:translateY(-10px)}}
       @keyframes orbitPulse{50%{transform:scale(1.025)}}
       @keyframes floatCard{50%{transform:translateY(-10px)}}
+
+      /* The real Streamlit container owns the entire login form,
+         including every input and button. */
+      .st-key-login_side_form {
+          width:100% !important;
+          min-height:650px !important;
+          height:650px !important;
+          box-sizing:border-box !important;
+          padding:38px 32px !important;
+          background:rgba(255,255,255,.96) !important;
+          border:1px solid #dcecff !important;
+          border-radius:20px !important;
+          box-shadow:0 18px 48px rgba(19,82,145,.09) !important;
+          display:flex !important;
+          flex-direction:column !important;
+          justify-content:center !important;
+          overflow:hidden !important;
+      }
+
+      .st-key-login_side_form > div {
+          width:100% !important;
+          box-sizing:border-box !important;
+      }
+
+      .login-side-header {
+          width:100%;
+          box-sizing:border-box;
+      }
+
+      .login-side-footer {
+          margin-top:18px;
+          padding-top:15px;
+          border-top:1px solid #e9f0f7;
+          color:#8195aa;
+          font-size:.66rem;
+          line-height:1.5;
+      }
 
       /* Streamlit form controls inside the right card */
       .login-side-card [data-testid="stTextInput"] label {
@@ -623,11 +646,11 @@ def _login_page():
           }
           .login-copy{min-height:430px;padding:42px 34px}
           .login-visual{min-height:470px}
-          .login-side-card{
-              height:auto;
-              min-height:0;
+          .st-key-login_side_form{
+              height:auto !important;
+              min-height:0 !important;
               margin-top:18px;
-              padding:30px 28px;
+              padding:30px 28px !important;
           }
           .login-orbit{width:350px;height:350px}
           .login-robot-img{width:320px}
@@ -640,7 +663,7 @@ def _login_page():
           .login-visual{min-height:390px}
           .login-orbit{width:290px;height:290px}
           .login-robot-img{width:270px}
-          .login-side-card{padding:25px 20px}
+          .st-key-login_side_form{padding:25px 20px !important}
       }
     </style>
     """, unsafe_allow_html=True)
@@ -682,10 +705,10 @@ def _login_page():
         )
 
     with right:
-        with st.container():
+        with st.container(border=True, key="login_side_form"):
             st.markdown(
                 """
-                <div class="login-side-card">
+                <div class="login-side-header">
                   <div class="login-side-badge">
                     <span class="login-side-badge-dot"></span>
                     Secure workspace access
@@ -695,6 +718,7 @@ def _login_page():
                     Connect securely to your enterprise intelligence workspace.
                   </div>
                   <div class="login-side-divider"></div>
+                </div>
                 """,
                 unsafe_allow_html=True,
             )
@@ -745,17 +769,9 @@ def _login_page():
 
             st.markdown(
                 """
-                  <div style="
-                      margin-top:18px;
-                      padding-top:15px;
-                      border-top:1px solid #e9f0f7;
-                      color:#8195aa;
-                      font-size:.66rem;
-                      line-height:1.5;
-                  ">
-                    Your credentials are used only to establish the secure
-                    Snowflake session for this workspace.
-                  </div>
+                <div class="login-side-footer">
+                  Your credentials are used only to establish the secure
+                  Snowflake session for this workspace.
                 </div>
                 """,
                 unsafe_allow_html=True,
