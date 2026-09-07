@@ -354,70 +354,373 @@ def _new_captcha():
 
 
 def _login_page():
+    # ================================================================
+    # CHAT LOGIN — 70% AI CARD + 30% SIGN-IN CARD
+    # Only the login-page layout is changed here. Authentication logic
+    # and the rest of the application remain unchanged.
+    # ================================================================
     st.markdown("""
     <style>
-      .login-shell{max-width:1180px;margin:2.2rem auto 0;background:#fff;border:1px solid #d8ebff;border-radius:28px;overflow:hidden;box-shadow:0 24px 70px rgba(19,82,145,.12)}
-      .login-grid{display:grid;grid-template-columns:1.02fr .98fr;min-height:650px}
-      .login-copy{padding:58px 64px;background:linear-gradient(145deg,#ffffff 0%,#f2f9ff 100%);display:flex;flex-direction:column;justify-content:center}
-      .login-visual{position:relative;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%,#e8f7ff 0,#d9efff 30%,#f7fbff 68%,#fff 100%);overflow:hidden}
-      .login-logo{display:inline-flex;width:max-content;background:#e51f2b;color:#fff;font-weight:900;font-size:1.35rem;padding:9px 17px;border-radius:4px;letter-spacing:.6px;box-shadow:0 8px 20px rgba(229,31,43,.12)}
-      .login-eyebrow{color:#1769d2;font-weight:800;letter-spacing:2px;text-transform:uppercase;font-size:.78rem;margin-top:38px}
-      .login-title{font-size:3.15rem;line-height:1.04;font-weight:900;color:#082d69;margin:.5rem 0 1rem;letter-spacing:-1.4px}
+      .login-page-row{
+          width:100%;
+          display:grid;
+          grid-template-columns:7fr 3fr;
+          gap:22px;
+          align-items:stretch;
+          margin:2.2rem auto 0;
+      }
+
+      .login-ai-card{
+          min-height:650px;
+          box-sizing:border-box;
+          border:1px solid #d8ebff;
+          border-radius:24px;
+          overflow:hidden;
+          background:#fff;
+          box-shadow:0 24px 70px rgba(19,82,145,.12);
+          display:grid;
+          grid-template-columns:1fr 1fr;
+      }
+
+      .login-copy{
+          padding:58px 52px;
+          background:linear-gradient(145deg,#ffffff 0%,#f2f9ff 100%);
+          display:flex;
+          flex-direction:column;
+          justify-content:center;
+      }
+
+      .login-visual{
+          position:relative;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          background:radial-gradient(circle at 50% 45%,#e8f7ff 0,#d9efff 30%,#f7fbff 68%,#fff 100%);
+          overflow:hidden;
+      }
+
+      .login-logo{
+          display:inline-flex;
+          width:max-content;
+          background:#e51f2b;
+          color:#fff;
+          font-weight:900;
+          font-size:1.35rem;
+          padding:9px 17px;
+          border-radius:4px;
+          letter-spacing:.6px;
+          box-shadow:0 8px 20px rgba(229,31,43,.12);
+      }
+
+      .login-eyebrow{
+          color:#1769d2;
+          font-weight:800;
+          letter-spacing:2px;
+          text-transform:uppercase;
+          font-size:.78rem;
+          margin-top:38px;
+      }
+
+      .login-title{
+          font-size:3.15rem;
+          line-height:1.04;
+          font-weight:900;
+          color:#082d69;
+          margin:.5rem 0 1rem;
+          letter-spacing:-1.4px;
+      }
+
       .login-title span{color:#1769d2}
-      .login-sub{color:#55708f;font-size:1rem;line-height:1.7;max-width:510px;margin-bottom:26px}
-      .login-feature-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
-      .login-feature{padding:9px 13px;background:#fff;border:1px solid #d7eaff;border-radius:999px;color:#245b91;font-size:.78rem;font-weight:700;box-shadow:0 7px 18px rgba(23,91,160,.05)}
-      .login-orbit{width:450px;height:450px;border-radius:50%;border:1px solid #b8dcff;box-shadow:0 0 0 28px rgba(35,137,230,.05),0 0 0 58px rgba(35,137,230,.035);position:relative;animation:orbitPulse 4s ease-in-out infinite;display:flex;align-items:center;justify-content:center}
-      .login-robot-img{width:410px;max-width:90%;height:auto;object-fit:contain;filter:drop-shadow(0 28px 40px rgba(20,94,170,.18));animation:robotFloat 3.4s ease-in-out infinite}
-      .login-float{position:absolute;padding:10px 14px;background:#fff;border:1px solid #d7eaff;border-radius:14px;color:#15519b;font-weight:700;box-shadow:0 10px 25px rgba(22,91,164,.1);animation:floatCard 4s ease-in-out infinite;z-index:2}
-      .login-float.one{top:16%;left:7%}.login-float.two{right:7%;top:23%;animation-delay:1s}.login-float.three{bottom:15%;left:11%;animation-delay:2s}
-      .login-form{max-width:560px;margin:0 auto;padding:0 0 3rem}
-      .login-form h3{color:#082d69;font-size:1.25rem;margin:0 0 12px}
+
+      .login-sub{
+          color:#55708f;
+          font-size:1rem;
+          line-height:1.7;
+          max-width:510px;
+          margin-bottom:26px;
+      }
+
+      .login-feature-row{
+          display:flex;
+          gap:10px;
+          flex-wrap:wrap;
+          margin-top:8px;
+      }
+
+      .login-feature{
+          padding:9px 13px;
+          background:#fff;
+          border:1px solid #d7eaff;
+          border-radius:999px;
+          color:#245b91;
+          font-size:.78rem;
+          font-weight:700;
+          box-shadow:0 7px 18px rgba(23,91,160,.05);
+      }
+
+      .login-orbit{
+          width:450px;
+          height:450px;
+          border-radius:50%;
+          border:1px solid #b8dcff;
+          box-shadow:0 0 0 28px rgba(35,137,230,.05),0 0 0 58px rgba(35,137,230,.035);
+          position:relative;
+          animation:orbitPulse 4s ease-in-out infinite;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+      }
+
+      .login-robot-img{
+          width:410px;
+          max-width:90%;
+          height:auto;
+          object-fit:contain;
+          filter:drop-shadow(0 28px 40px rgba(20,94,170,.18));
+          animation:robotFloat 3.4s ease-in-out infinite;
+      }
+
+      .login-float{
+          position:absolute;
+          padding:10px 14px;
+          background:#fff;
+          border:1px solid #d7eaff;
+          border-radius:14px;
+          color:#15519b;
+          font-weight:700;
+          box-shadow:0 10px 25px rgba(22,91,164,.1);
+          animation:floatCard 4s ease-in-out infinite;
+          z-index:2;
+      }
+
+      .login-float.one{top:16%;left:7%}
+      .login-float.two{right:7%;top:23%;animation-delay:1s}
+      .login-float.three{bottom:15%;left:11%;animation-delay:2s}
+
+      .login-form-card{
+          min-height:650px !important;
+          height:650px !important;
+          box-sizing:border-box !important;
+          padding:38px 30px !important;
+          background:rgba(255,255,255,.97) !important;
+          border:1px solid #d8ebff !important;
+          border-radius:24px !important;
+          box-shadow:0 24px 70px rgba(19,82,145,.12) !important;
+          display:flex !important;
+          flex-direction:column !important;
+          justify-content:center !important;
+          overflow:hidden !important;
+      }
+
+      .login-form-badge{
+          display:inline-block;
+          width:max-content;
+          padding:6px 10px;
+          border:1px solid #d7eaff;
+          border-radius:999px;
+          background:#f3f9ff;
+          color:#1769d2;
+          font-size:.67rem;
+          font-weight:800;
+          margin-bottom:10px;
+      }
+
+      .login-form-title{
+          color:#082d69;
+          font-size:1.45rem;
+          font-weight:900;
+          margin:0;
+      }
+
+      .login-form-sub{
+          color:#6b849e;
+          font-size:.72rem;
+          line-height:1.5;
+          margin-top:7px;
+          margin-bottom:18px;
+      }
+
+      .login-divider{
+          height:1px;
+          background:#e2edf7;
+          width:100%;
+          margin-bottom:18px;
+      }
+
+      .login-form-card label{
+          color:#486784 !important;
+          font-size:.70rem !important;
+          font-weight:700 !important;
+      }
+
+      .login-form-card input{
+          border-radius:9px !important;
+          border:1px solid #dce8f3 !important;
+          background:#f7fafd !important;
+          min-height:40px !important;
+      }
+
+      .login-form-card input:focus{
+          border-color:#8fc2f5 !important;
+          box-shadow:0 0 0 2px rgba(23,105,210,.08) !important;
+      }
+
+      .login-form-footer{
+          color:#91a3b5;
+          font-size:.61rem;
+          line-height:1.45;
+          margin-top:14px;
+      }
+
       @keyframes robotFloat{50%{transform:translateY(-10px)}}
       @keyframes orbitPulse{50%{transform:scale(1.025)}}
       @keyframes floatCard{50%{transform:translateY(-10px)}}
-      @media(max-width:900px){.login-shell{margin:1rem .5rem 0}.login-grid{grid-template-columns:1fr}.login-visual{min-height:460px;order:-1}.login-copy{padding:42px 28px}.login-title{font-size:2.35rem}.login-orbit{width:350px;height:350px}.login-robot-img{width:330px}}
+
+      @media(max-width:1050px){
+          .login-page-row{grid-template-columns:1fr}
+          .login-form-card{min-height:auto !important;height:auto !important}
+      }
+
+      @media(max-width:700px){
+          .login-ai-card{grid-template-columns:1fr}
+          .login-visual{min-height:430px;order:-1}
+          .login-copy{padding:42px 28px}
+          .login-title{font-size:2.35rem}
+          .login-orbit{width:350px;height:350px}
+          .login-robot-img{width:330px}
+      }
     </style>
-    <div class="login-shell"><div class="login-grid"><div class="login-copy">
-      <div class="login-logo">DILYTICS</div>
-      <div class="login-eyebrow">Enterprise AI Workspace</div>
-      <div class="login-title">Turn your data into <span>answers.</span></div>
-      <div class="login-sub">Sign in securely to explore Inventory, Sales, Supply Chain and Document AI with natural-language conversations powered by Snowflake.</div>
-      <div class="login-feature-row"><span class="login-feature">📊 Live insights</span><span class="login-feature">🔐 Secure access</span><span class="login-feature">⚡ AI powered</span></div>
-    </div><div class="login-visual">
-      <div class="login-float one">📈 Smarter decisions</div><div class="login-float two">☁️ Cloud analytics</div><div class="login-float three">🤖 AI ready</div>
-      <div class="login-orbit"><img class="login-robot-img" src="{robot_src}" alt="Dilytics AI assistant" /></div>
-    </div></div></div>
-    """.replace("{robot_src}", _robot_data_uri()), unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-    st.markdown('<div class="login-form">', unsafe_allow_html=True)
-    st.markdown("### Sign in")
-    c1, c2 = st.columns(2, gap="medium")
-    with c1:
-        st.session_state.username = st.text_input("Username", value=st.session_state.username, key="login_username")
-    with c2:
-        st.session_state.password = st.text_input("Password", type="password", key="login_password")
+    left, right = st.columns([7, 3], gap="medium")
 
-    captcha = f"{st.session_state.captcha_a} + {st.session_state.captcha_b} = ?"
-    cc1, cc2 = st.columns([1, 1], gap="medium")
-    with cc1:
-        st.text_input("Security check", value=captcha, disabled=True, key="login_captcha_question")
-    with cc2:
-        captcha_answer = st.text_input("Enter answer", key="login_captcha_answer")
+    # ============================================================
+    # 70% — EXISTING DILYTICS AI CARD
+    # ============================================================
+    with left:
+        st.markdown(
+            """
+            <div class="login-ai-card">
+              <div class="login-copy">
+                <div class="login-logo">DILYTICS</div>
+                <div class="login-eyebrow">Enterprise AI Workspace</div>
+                <div class="login-title">
+                  Turn your data into <span>answers.</span>
+                </div>
+                <div class="login-sub">
+                  Sign in securely to explore Inventory, Sales, Supply Chain
+                  and Document AI with natural-language conversations powered
+                  by Snowflake.
+                </div>
+                <div class="login-feature-row">
+                  <span class="login-feature">📊 Live insights</span>
+                  <span class="login-feature">🔐 Secure access</span>
+                  <span class="login-feature">⚡ AI powered</span>
+                </div>
+              </div>
 
-    b1, b2 = st.columns([4, 1], gap="small")
-    with b1:
-        login_clicked = st.button("Sign in to Dilytics", use_container_width=True, type="primary", key="login_submit")
-    with b2:
-        if st.button("↻", help="New CAPTCHA", use_container_width=True, key="login_refresh_captcha"):
-            _new_captcha()
-            st.rerun()
+              <div class="login-visual">
+                <div class="login-float one">📈 Smarter decisions</div>
+                <div class="login-float two">☁️ Cloud analytics</div>
+                <div class="login-float three">🤖 AI ready</div>
+                <div class="login-orbit">
+                  <img
+                    class="login-robot-img"
+                    src="{robot_src}"
+                    alt="Dilytics AI assistant"
+                  />
+                </div>
+              </div>
+            </div>
+            """.replace("{robot_src}", _robot_data_uri()),
+            unsafe_allow_html=True,
+        )
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    # ============================================================
+    # 30% — COMPLETE SIGN-IN CARD
+    # ============================================================
+    with right:
+        with st.container(border=True, key="login_form_card"):
+            st.markdown(
+                """
+                <div class="login-form-badge">
+                  🟢 Secure workspace access
+                </div>
+                <div class="login-form-title">Sign in to Dilytics</div>
+                <div class="login-form-sub">
+                  Connect securely to your enterprise intelligence workspace.
+                </div>
+                <div class="login-divider"></div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+            st.session_state.username = st.text_input(
+                "Username",
+                value=st.session_state.username,
+                key="login_username",
+            )
+
+            st.session_state.password = st.text_input(
+                "Password",
+                type="password",
+                key="login_password",
+            )
+
+            captcha = (
+                f"{st.session_state.captcha_a} + "
+                f"{st.session_state.captcha_b} = ?"
+            )
+
+            st.text_input(
+                "Security check",
+                value=captcha,
+                disabled=True,
+                key="login_captcha_question",
+            )
+
+            captcha_answer = st.text_input(
+                "Enter answer",
+                key="login_captcha_answer",
+            )
+
+            b1, b2 = st.columns([4, 1], gap="small")
+
+            with b1:
+                login_clicked = st.button(
+                    "Sign in to Dilytics",
+                    use_container_width=True,
+                    type="primary",
+                    key="login_submit",
+                )
+
+            with b2:
+                refresh_clicked = st.button(
+                    "↻",
+                    help="New CAPTCHA",
+                    use_container_width=True,
+                    key="login_refresh_captcha",
+                )
+
+            st.markdown(
+                """
+                <div class="login-form-footer">
+                  Your credentials are used only to establish the secure
+                  Snowflake session for this workspace.
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    if refresh_clicked:
+        _new_captcha()
+        st.rerun()
 
     if login_clicked:
         try:
-            if int(captcha_answer.strip()) != st.session_state.captcha_a + st.session_state.captcha_b:
+            if int(captcha_answer.strip()) != (
+                st.session_state.captcha_a + st.session_state.captcha_b
+            ):
                 st.error("Incorrect security check. Please try again.")
             else:
                 with st.spinner("Connecting securely to Snowflake..."):
@@ -432,30 +735,27 @@ def _login_page():
                         database=DATABASE,
                         schema=SCHEMA,
                     )
+
                     st.session_state.snowflake_conn = conn
-                    st.session_state.snowpark_session = Session.builder.configs({"connection": conn}).create()
+                    st.session_state.snowpark_session = (
+                        Session.builder
+                        .configs({"connection": conn})
+                        .create()
+                    )
+
                     st.session_state.authenticated = True
-                    # Authentication was opened from "Chat with AI", so
-                    # continue directly to the chatbot after successful login.
+
+                    # Authentication was opened from "Chat with AI",
+                    # so continue directly to the chatbot.
                     st.session_state.app_page = "chatbot"
                     st.rerun()
+
         except Exception as e:
             st.error(f"Authentication failed: {e}")
+
     st.stop()
 
-# Do not show the login page on initial app load.
-# The home page is public; authentication is requested only when the
-# user chooses "Chat with AI".
-session = st.session_state.get("snowpark_session")
-conn = st.session_state.get("snowflake_conn")
 
-# ===================================================================
-# 2. CORTEX ANALYST
-#
-# No Python question -> SQL mapping.
-# Cortex Analyst receives the complete YAML semantic model(s),
-# understands the user's natural-language question, and generates SQL.
-# ===================================================================
 def get_analyst_headers() -> Dict[str, str]:
     token = conn.rest.token
     return {
