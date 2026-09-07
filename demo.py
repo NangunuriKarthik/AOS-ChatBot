@@ -354,432 +354,66 @@ def _new_captcha():
 
 
 def _login_page():
-    """Login screen with a 70/30 hero-to-login layout."""
     st.markdown("""
     <style>
-      /* ================================================================
-         DILYTICS LOGIN — 70 / 30 SPLIT
-         Left: premium product card
-         Right: compact sign-in card
-         ================================================================ */
-
-      .login-layout {
-          width: 100%;
-          max-width: 1500px;
-          margin: 2.2rem auto 0;
-          padding: 0 2.5vw 3rem;
-          box-sizing: border-box;
-      }
-
-      .login-hero-card {
-          min-height: 650px;
-          height: 650px;
-          box-sizing: border-box;
-          border: 1px solid #d8ebff;
-          border-radius: 24px;
-          overflow: hidden;
-          background: #ffffff;
-          box-shadow: 0 22px 65px rgba(19,82,145,.11);
-          display: grid;
-          grid-template-columns: 46% 54%;
-      }
-
-      .login-copy {
-          padding: 58px 54px;
-          background: linear-gradient(145deg,#ffffff 0%,#f2f9ff 100%);
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-      }
-
-      .login-logo {
-          display: inline-flex;
-          width: max-content;
-          background: #e51f2b;
-          color: #fff;
-          font-weight: 900;
-          font-size: 1.35rem;
-          padding: 10px 18px;
-          border-radius: 3px;
-          letter-spacing: .6px;
-          box-shadow: 0 8px 20px rgba(229,31,43,.12);
-      }
-
-      .login-eyebrow {
-          color:#1769d2;
-          font-weight:800;
-          letter-spacing:2px;
-          text-transform:uppercase;
-          font-size:.76rem;
-          margin-top:38px;
-      }
-
-      .login-title {
-          font-size:3.05rem;
-          line-height:1.04;
-          font-weight:900;
-          color:#082d69;
-          margin:.5rem 0 1rem;
-          letter-spacing:-1.5px;
-      }
-
-      .login-title span { color:#1769d2; }
-
-      .login-sub {
-          color:#55708f;
-          font-size:1rem;
-          line-height:1.7;
-          max-width:500px;
-          margin-bottom:25px;
-      }
-
-      .login-feature-row {
-          display:flex;
-          gap:9px;
-          flex-wrap:wrap;
-          margin-top:8px;
-      }
-
-      .login-feature {
-          padding:9px 12px;
-          background:#fff;
-          border:1px solid #d7eaff;
-          border-radius:999px;
-          color:#245b91;
-          font-size:.75rem;
-          font-weight:700;
-          box-shadow:0 7px 18px rgba(23,91,160,.05);
-      }
-
-      .login-visual {
-          position:relative;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          background:
-              radial-gradient(circle at 50% 45%,#e8f7ff 0,#d9efff 30%,#f7fbff 68%,#fff 100%);
-          overflow:hidden;
-      }
-
-      .login-orbit {
-          width:440px;
-          height:440px;
-          border-radius:50%;
-          border:1px solid #b8dcff;
-          box-shadow:
-              0 0 0 28px rgba(35,137,230,.05),
-              0 0 0 58px rgba(35,137,230,.035);
-          position:relative;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          animation:orbitPulse 4s ease-in-out infinite;
-      }
-
-      .login-robot-img {
-          width:400px;
-          max-width:90%;
-          height:auto;
-          object-fit:contain;
-          filter:drop-shadow(0 28px 40px rgba(20,94,170,.18));
-          animation:robotFloat 3.4s ease-in-out infinite;
-      }
-
-      .login-float {
-          position:absolute;
-          padding:10px 14px;
-          background:#fff;
-          border:1px solid #d7eaff;
-          border-radius:14px;
-          color:#15519b;
-          font-weight:700;
-          font-size:.75rem;
-          box-shadow:0 10px 25px rgba(22,91,164,.1);
-          animation:floatCard 4s ease-in-out infinite;
-          z-index:2;
-      }
-
-      .login-float.one{top:16%;left:7%}
-      .login-float.two{right:7%;top:23%;animation-delay:1s}
-      .login-float.three{bottom:15%;left:11%;animation-delay:2s}
-
-      /* Right 30% login card */
-      .login-side-badge {
-          display:inline-flex;
-          width:max-content;
-          align-items:center;
-          gap:7px;
-          padding:6px 10px;
-          margin-bottom:16px;
-          border-radius:999px;
-          background:#f0f7ff;
-          border:1px solid #d9ebfb;
-          color:#1769d2;
-          font-size:.67rem;
-          font-weight:800;
-          letter-spacing:.3px;
-      }
-
-      .login-side-badge-dot {
-          width:7px;
-          height:7px;
-          border-radius:50%;
-          background:#25a866;
-          box-shadow:0 0 0 3px rgba(37,168,102,.10);
-      }
-
-      .login-side-title {
-          color:#082d69;
-          font-size:1.65rem;
-          font-weight:900;
-          margin:0 0 7px;
-          letter-spacing:-.4px;
-      }
-
-      .login-side-sub {
-          color:#6a819b;
-          font-size:.78rem;
-          line-height:1.55;
-          margin-bottom:20px;
-      }
-
-      .login-side-divider {
-          height:1px;
-          background:#e7eff7;
-          margin:0 0 20px;
-      }
-
+      .login-shell{max-width:1180px;margin:2.2rem auto 0;background:#fff;border:1px solid #d8ebff;border-radius:28px;overflow:hidden;box-shadow:0 24px 70px rgba(19,82,145,.12)}
+      .login-grid{display:grid;grid-template-columns:1.02fr .98fr;min-height:650px}
+      .login-copy{padding:58px 64px;background:linear-gradient(145deg,#ffffff 0%,#f2f9ff 100%);display:flex;flex-direction:column;justify-content:center}
+      .login-visual{position:relative;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 45%,#e8f7ff 0,#d9efff 30%,#f7fbff 68%,#fff 100%);overflow:hidden}
+      .login-logo{display:inline-flex;width:max-content;background:#e51f2b;color:#fff;font-weight:900;font-size:1.35rem;padding:9px 17px;border-radius:4px;letter-spacing:.6px;box-shadow:0 8px 20px rgba(229,31,43,.12)}
+      .login-eyebrow{color:#1769d2;font-weight:800;letter-spacing:2px;text-transform:uppercase;font-size:.78rem;margin-top:38px}
+      .login-title{font-size:3.15rem;line-height:1.04;font-weight:900;color:#082d69;margin:.5rem 0 1rem;letter-spacing:-1.4px}
+      .login-title span{color:#1769d2}
+      .login-sub{color:#55708f;font-size:1rem;line-height:1.7;max-width:510px;margin-bottom:26px}
+      .login-feature-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+      .login-feature{padding:9px 13px;background:#fff;border:1px solid #d7eaff;border-radius:999px;color:#245b91;font-size:.78rem;font-weight:700;box-shadow:0 7px 18px rgba(23,91,160,.05)}
+      .login-orbit{width:450px;height:450px;border-radius:50%;border:1px solid #b8dcff;box-shadow:0 0 0 28px rgba(35,137,230,.05),0 0 0 58px rgba(35,137,230,.035);position:relative;animation:orbitPulse 4s ease-in-out infinite;display:flex;align-items:center;justify-content:center}
+      .login-robot-img{width:410px;max-width:90%;height:auto;object-fit:contain;filter:drop-shadow(0 28px 40px rgba(20,94,170,.18));animation:robotFloat 3.4s ease-in-out infinite}
+      .login-float{position:absolute;padding:10px 14px;background:#fff;border:1px solid #d7eaff;border-radius:14px;color:#15519b;font-weight:700;box-shadow:0 10px 25px rgba(22,91,164,.1);animation:floatCard 4s ease-in-out infinite;z-index:2}
+      .login-float.one{top:16%;left:7%}.login-float.two{right:7%;top:23%;animation-delay:1s}.login-float.three{bottom:15%;left:11%;animation-delay:2s}
+      .login-form{max-width:560px;margin:0 auto;padding:0 0 3rem}
+      .login-form h3{color:#082d69;font-size:1.25rem;margin:0 0 12px}
       @keyframes robotFloat{50%{transform:translateY(-10px)}}
       @keyframes orbitPulse{50%{transform:scale(1.025)}}
       @keyframes floatCard{50%{transform:translateY(-10px)}}
-
-      /* The real Streamlit container owns the entire login form,
-         including every input and button. */
-      .st-key-login_side_form {
-          width:100% !important;
-          min-height:650px !important;
-          height:650px !important;
-          box-sizing:border-box !important;
-          padding:38px 32px !important;
-          background:rgba(255,255,255,.96) !important;
-          border:1px solid #dcecff !important;
-          border-radius:20px !important;
-          box-shadow:0 18px 48px rgba(19,82,145,.09) !important;
-          display:flex !important;
-          flex-direction:column !important;
-          justify-content:center !important;
-          overflow:hidden !important;
-      }
-
-      .st-key-login_side_form > div {
-          width:100% !important;
-          box-sizing:border-box !important;
-      }
-
-      .login-side-header {
-          width:100%;
-          box-sizing:border-box;
-      }
-
-      .login-side-footer {
-          margin-top:18px;
-          padding-top:15px;
-          border-top:1px solid #e9f0f7;
-          color:#8195aa;
-          font-size:.66rem;
-          line-height:1.5;
-      }
-
-      /* Streamlit form controls inside the right card */
-      .login-side-card [data-testid="stTextInput"] label {
-          color:#3f5f7f !important;
-          font-size:.72rem !important;
-          font-weight:750 !important;
-      }
-
-      .login-side-card [data-testid="stTextInput"] input {
-          height:44px !important;
-          border:1px solid #d8e5f1 !important;
-          border-radius:10px !important;
-          background:#f9fbfd !important;
-          color:#183d67 !important;
-          font-size:.82rem !important;
-      }
-
-      .login-side-card [data-testid="stTextInput"] input:focus {
-          border-color:#75b7ee !important;
-          box-shadow:0 0 0 3px rgba(23,105,210,.08) !important;
-      }
-
-      .login-side-card [data-testid="stButton"] > button {
-          min-height:44px !important;
-          height:44px !important;
-          border-radius:10px !important;
-          font-weight:800 !important;
-          font-size:.78rem !important;
-      }
-
-      .login-side-card .login-submit-wrap [data-testid="stButton"] > button {
-          background:linear-gradient(180deg,#e52c35 0%,#cf2029 100%) !important;
-          color:#fff !important;
-          border:1px solid #cf2029 !important;
-          box-shadow:0 7px 16px rgba(207,32,41,.17) !important;
-      }
-
-      .login-side-card .login-submit-wrap [data-testid="stButton"] > button:hover {
-          transform:translateY(-1px);
-          box-shadow:0 9px 20px rgba(207,32,41,.23) !important;
-      }
-
-      .login-side-card .login-captcha-wrap [data-testid="stButton"] > button {
-          background:#fff !important;
-          color:#1769d2 !important;
-          border:1px solid #d8e5f1 !important;
-      }
-
-      @media(max-width:1050px){
-          .login-layout{padding:0 1rem 2rem}
-          .login-hero-card{
-              grid-template-columns:1fr;
-              height:auto;
-              min-height:0;
-          }
-          .login-copy{min-height:430px;padding:42px 34px}
-          .login-visual{min-height:470px}
-          .st-key-login_side_form{
-              height:auto !important;
-              min-height:0 !important;
-              margin-top:18px;
-              padding:30px 28px !important;
-          }
-          .login-orbit{width:350px;height:350px}
-          .login-robot-img{width:320px}
-      }
-
-      @media(max-width:600px){
-          .login-layout{margin-top:1rem;padding:0 .65rem 2rem}
-          .login-copy{padding:34px 24px;min-height:390px}
-          .login-title{font-size:2.25rem}
-          .login-visual{min-height:390px}
-          .login-orbit{width:290px;height:290px}
-          .login-robot-img{width:270px}
-          .st-key-login_side_form{padding:25px 20px !important}
-      }
+      @media(max-width:900px){.login-shell{margin:1rem .5rem 0}.login-grid{grid-template-columns:1fr}.login-visual{min-height:460px;order:-1}.login-copy{padding:42px 28px}.login-title{font-size:2.35rem}.login-orbit{width:350px;height:350px}.login-robot-img{width:330px}}
     </style>
-    """, unsafe_allow_html=True)
+    <div class="login-shell"><div class="login-grid"><div class="login-copy">
+      <div class="login-logo">DILYTICS</div>
+      <div class="login-eyebrow">Enterprise AI Workspace</div>
+      <div class="login-title">Turn your data into <span>answers.</span></div>
+      <div class="login-sub">Sign in securely to explore Inventory, Sales, Supply Chain and Document AI with natural-language conversations powered by Snowflake.</div>
+      <div class="login-feature-row"><span class="login-feature">📊 Live insights</span><span class="login-feature">🔐 Secure access</span><span class="login-feature">⚡ AI powered</span></div>
+    </div><div class="login-visual">
+      <div class="login-float one">📈 Smarter decisions</div><div class="login-float two">☁️ Cloud analytics</div><div class="login-float three">🤖 AI ready</div>
+      <div class="login-orbit"><img class="login-robot-img" src="{robot_src}" alt="Dilytics AI assistant" /></div>
+    </div></div></div>
+    """.replace("{robot_src}", _robot_data_uri()), unsafe_allow_html=True)
 
-    # 70% product/AI card + 30% login card.
-    left, right = st.columns([7, 3], gap="large", vertical_alignment="top")
+    st.markdown('<div class="login-form">', unsafe_allow_html=True)
+    st.markdown("### Sign in")
+    c1, c2 = st.columns(2, gap="medium")
+    with c1:
+        st.session_state.username = st.text_input("Username", value=st.session_state.username, key="login_username")
+    with c2:
+        st.session_state.password = st.text_input("Password", type="password", key="login_password")
 
-    with left:
-        st.markdown(
-            """
-            <div class="login-hero-card">
-              <div class="login-copy">
-                <div class="login-logo">DILYTICS</div>
-                <div class="login-eyebrow">Enterprise AI Workspace</div>
-                <div class="login-title">Turn your data into <span>answers.</span></div>
-                <div class="login-sub">
-                  Sign in securely to explore Inventory, Sales, Supply Chain and
-                  Document AI with natural-language conversations powered by Snowflake.
-                </div>
-                <div class="login-feature-row">
-                  <span class="login-feature">📊 Live insights</span>
-                  <span class="login-feature">🔐 Secure access</span>
-                  <span class="login-feature">⚡ AI powered</span>
-                </div>
-              </div>
-              <div class="login-visual">
-                <div class="login-float one">📈 Smarter decisions</div>
-                <div class="login-float two">☁️ Cloud analytics</div>
-                <div class="login-float three">🤖 AI ready</div>
-                <div class="login-orbit">
-                  <img class="login-robot-img"
-                       src="{robot_src}"
-                       alt="Dilytics AI assistant" />
-                </div>
-              </div>
-            </div>
-            """.replace("{robot_src}", _robot_data_uri()),
-            unsafe_allow_html=True,
-        )
+    captcha = f"{st.session_state.captcha_a} + {st.session_state.captcha_b} = ?"
+    cc1, cc2 = st.columns([1, 1], gap="medium")
+    with cc1:
+        st.text_input("Security check", value=captcha, disabled=True, key="login_captcha_question")
+    with cc2:
+        captcha_answer = st.text_input("Enter answer", key="login_captcha_answer")
 
-    with right:
-        with st.container(border=True, key="login_side_form"):
-            st.markdown(
-                """
-                <div class="login-side-header">
-                  <div class="login-side-badge">
-                    <span class="login-side-badge-dot"></span>
-                    Secure workspace access
-                  </div>
-                  <div class="login-side-title">Sign in to Dilytics</div>
-                  <div class="login-side-sub">
-                    Connect securely to your enterprise intelligence workspace.
-                  </div>
-                  <div class="login-side-divider"></div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+    b1, b2 = st.columns([4, 1], gap="small")
+    with b1:
+        login_clicked = st.button("Sign in to Dilytics", use_container_width=True, type="primary", key="login_submit")
+    with b2:
+        if st.button("↻", help="New CAPTCHA", use_container_width=True, key="login_refresh_captcha"):
+            _new_captcha()
+            st.rerun()
 
-            st.session_state.username = st.text_input(
-                "Username",
-                value=st.session_state.username,
-                key="login_username",
-            )
-            st.session_state.password = st.text_input(
-                "Password",
-                type="password",
-                key="login_password",
-            )
-
-            captcha = f"{st.session_state.captcha_a} + {st.session_state.captcha_b} = ?"
-            st.text_input(
-                "Security check",
-                value=captcha,
-                disabled=True,
-                key="login_captcha_question",
-            )
-            captcha_answer = st.text_input(
-                "Enter answer",
-                key="login_captcha_answer",
-            )
-
-            b1, b2 = st.columns([4, 1], gap="small")
-            with b1:
-                st.markdown('<div class="login-submit-wrap">', unsafe_allow_html=True)
-                login_clicked = st.button(
-                    "Sign in to Dilytics",
-                    use_container_width=True,
-                    type="primary",
-                    key="login_submit",
-                )
-                st.markdown('</div>', unsafe_allow_html=True)
-
-            with b2:
-                st.markdown('<div class="login-captcha-wrap">', unsafe_allow_html=True)
-                refresh_clicked = st.button(
-                    "↻",
-                    help="New CAPTCHA",
-                    use_container_width=True,
-                    key="login_refresh_captcha",
-                )
-                st.markdown('</div>', unsafe_allow_html=True)
-
-            st.markdown(
-                """
-                <div class="login-side-footer">
-                  Your credentials are used only to establish the secure
-                  Snowflake session for this workspace.
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-
-    if refresh_clicked:
-        _new_captcha()
-        st.rerun()
+    st.markdown('</div>', unsafe_allow_html=True)
 
     if login_clicked:
         try:
@@ -801,11 +435,12 @@ def _login_page():
                     st.session_state.snowflake_conn = conn
                     st.session_state.snowpark_session = Session.builder.configs({"connection": conn}).create()
                     st.session_state.authenticated = True
+                    # Authentication was opened from "Chat with AI", so
+                    # continue directly to the chatbot after successful login.
                     st.session_state.app_page = "chatbot"
                     st.rerun()
         except Exception as e:
             st.error(f"Authentication failed: {e}")
-
     st.stop()
 
 # Do not show the login page on initial app load.
@@ -2228,8 +1863,9 @@ def _open_chat():
 
 
 def _home_page():
-    st.markdown("""
-    <style>
+    st.markdown(
+        """
+<style>
       /* ================================================================
          DILYTICS HOME — MODULE CAROUSEL
          Three intelligence cards live in one horizontal scroll area.
@@ -2652,18 +2288,40 @@ def _home_page():
           }
       }
     </style>
-    <div class="home-hero">
-      <div>
-        <div class="home-eyebrow">WELCOME TO DILYTICS</div>
-        <div class="home-title">Your AI-Powered<br><span>Data Companion</span></div>
-        <div class="home-sub">Ask questions, explore insights, and make smarter decisions with the power of your data — all from one intelligent workspace.</div>
+        """, unsafe_allow_html=True)
 
-        <div class="home-stats">
-          <span class="home-stat"><span class="home-stat-icon">▥</span> Insights Made Simple</span>
-          <span class="home-stat"><span class="home-stat-icon">ϟ</span> Faster Decisions</span>
-          <span class="home-stat"><span class="home-stat-icon">✓</span> Secure &amp; Governed</span>
+
+    st.markdown(
+        """
+        <div class="home-hero">
+          <div>
+            <div class="home-eyebrow">WELCOME TO DILYTICS</div>
+            <div class="home-title">Your AI-Powered<br><span>Data Companion</span></div>
+            <div class="home-sub">
+              Ask questions, explore insights, and make smarter decisions with
+              the power of your data — all from one intelligent workspace.
+            </div>
+
+            <div class="home-stats">
+              <span class="home-stat"><span class="home-stat-icon">▥</span> Insights Made Simple</span>
+              <span class="home-stat"><span class="home-stat-icon">ϟ</span> Faster Decisions</span>
+              <span class="home-stat"><span class="home-stat-icon">✓</span> Secure &amp; Governed</span>
+            </div>
+          </div>
+
+          <div class="home-robot">
+            <div class="orb">
+              <img class="home-robot-img" src="{robot_src}" alt="Dilytics AI assistant" />
+            </div>
+            <div class="bubble"><b>Hi!</b><br>How can I help you<br>today?</div>
+          </div>
         </div>
+        """.replace("{robot_src}", _robot_data_uri()),
+        unsafe_allow_html=True,
+    )
 
+    st.markdown(
+        """
         <div class="home-value-panel">
           <div class="home-value-head">
             <span class="home-value-title">One workspace. Multiple intelligence layers.</span>
@@ -2691,18 +2349,14 @@ def _home_page():
             <span class="home-capability"><b>◇</b> Enterprise Ready</span>
           </div>
         </div>
-      </div>
-      <div class="home-robot">
-        <div class="orb"><img class="home-robot-img" src="{robot_src}" alt="Dilytics AI assistant" /></div>
-        <div class="bubble"><b>Hi!</b><br>How can I help you<br>today?</div>
-      </div>
-    </div>
-    """.replace("{robot_src}", _robot_data_uri()), unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown(
         '<div class="dly-module-rail-hint">'
         '<span>Explore our intelligence modules</span>'
-        '<span>← Scroll horizontally to view Supply Chain →</span>'
+        '<span>← Scroll horizontally to view more modules →</span>'
         '</div>',
         unsafe_allow_html=True,
     )
