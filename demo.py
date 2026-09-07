@@ -2733,6 +2733,7 @@ if "app_page" not in st.session_state:
 # the previous placement was after this routing block, so _document_ai_page()
 # could reach process_uploaded_document() without a local `session` variable.
 session = st.session_state.get("snowpark_session")
+conn = st.session_state.get("snowflake_conn")
 
 if st.session_state.app_page != "chatbot":
     _top_nav()
@@ -3241,25 +3242,39 @@ for idx, msg in enumerate(messages):
 
             if doc_type == "table":
                 current_df = st.session_state.uploaded_document_df
-                # Show the preview only for the currently loaded document.
+                # Keep the uploaded-file preview visible directly in the chat.
+                # This makes the upload event useful even before the user asks
+                # a question about the document.
                 if current_df is not None and doc_name == st.session_state.uploaded_document_name:
-                    with st.expander("📊 View uploaded data", expanded=False):
-                        st.dataframe(
-                            _normalize_uploaded_dataframe(current_df),
-                            use_container_width=True,
-                        )
+                    st.markdown("**📊 Uploaded data preview**")
+                    preview_df = _normalize_uploaded_dataframe(current_df)
+                    st.dataframe(
+                        preview_df.head(10),
+                        use_container_width=True,
+                        hide_index=True,
+                    )
+                    st.caption(
+                        f"Showing the first {min(10, len(preview_df))} rows "
+                        f"from `{doc_name}`. The complete uploaded dataset is "
+                        "available for document questions."
+                    )
             elif doc_type == "text":
                 current_text = st.session_state.uploaded_document_text
                 if current_text and doc_name == st.session_state.uploaded_document_name:
-                    with st.expander("📖 View extracted document content", expanded=False):
-                        st.text_area(
-                            "Document text",
-                            current_text,
-                            height=300,
-                            disabled=True,
-                            label_visibility="collapsed",
-                            key=f"doc_preview_{current_id}_{idx}",
-                        )
+                    st.markdown("**📖 Uploaded document preview**")
+                    # Keep the chat compact while showing the beginning of the
+                    # extracted document immediately.
+                    preview_text = current_text[:5000]
+                    st.text_area(
+                        "Document preview",
+                        preview_text,
+                        height=260,
+                        disabled=True,
+                        label_visibility="collapsed",
+                        key=f"doc_preview_{current_id}_{idx}",
+                    )
+                    if len(current_text) > 5000:
+                        st.caption("Preview shows the first 5,000 characters. The complete document remains available for questions.")
 
         if msg.get("sql"):
             with st.expander("Generated SQL", expanded=False):
@@ -3340,6 +3355,12 @@ if user_prompt:
             doc_answer = ""
 
             try:
+                if conn is None:
+                    raise RuntimeError(
+                        "Snowflake connection is not available. "
+                        "Please sign in again before asking questions about the uploaded document."
+                    )
+
                 with st.spinner("Analyzing your uploaded document..."):
                     if st.session_state.uploaded_document_type == "table":
                         doc_df_result, doc_sql_result, doc_analyst_result = answer_uploaded_table_question(
