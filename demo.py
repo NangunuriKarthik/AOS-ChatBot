@@ -2742,6 +2742,19 @@ if st.session_state.app_page != "chatbot":
 
 # Chatbot page keeps the existing working Cortex Analyst/document code below.
 
+# Snowpark session used by the existing document-upload and Cortex Analyst
+# code. Authentication creates this object in st.session_state; expose it
+# locally as `session` because the document functions use session.sql(),
+# session.file.put(), session.write_pandas(), etc.
+session = st.session_state.get("snowpark_session")
+
+if session is None:
+    st.error(
+        "Snowflake session is not available. Please return to Home, "
+        "open Chat with AI again, and sign in."
+    )
+    st.stop()
+
 # ===================================================================
 # 3. CHAT SESSION STATE
 # ===================================================================
