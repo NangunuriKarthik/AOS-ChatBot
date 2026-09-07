@@ -2329,13 +2329,19 @@ def _home_page():
                 st.markdown("**Document Intelligence**")
                 st.caption("Bring documents into the conversation and turn information into answers.")
 
-            p1, p2, p3 = st.columns(3, gap="small")
-            with p1:
-                st.markdown("◈ **Snowflake Powered**")
-            with p2:
-                st.markdown("↗ **Real-Time Insights**")
-            with p3:
-                st.markdown("◇ **Enterprise Ready**")
+p1, p2, p3 = st.columns(3, gap="small")
+
+with p1:
+    st.markdown("◈ **Snowflake Powered**")
+    st.caption("Built on Snowflake to securely analyze enterprise data and deliver trusted, governed insights.")
+
+with p2:
+    st.markdown("↗ **Real-Time Insights**")
+    st.caption("Turn up-to-date business data into actionable insights for faster and more informed decisions.")
+
+with p3:
+    st.markdown("◇ **Enterprise Ready**")
+    st.caption("Designed for secure, scalable business intelligence across teams, data sources, and workflows.")
 
     with hero_right:
         robot_html = (
