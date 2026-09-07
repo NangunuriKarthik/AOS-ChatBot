@@ -1393,7 +1393,7 @@ def _top_nav():
       .st-key-dly_main_header [data-testid="column"] {
           display: flex !important;
           align-items: center !important;
-          justify-content: flex-end !important;
+          justify-content: center !important;
       }
 
       /* Keep the logo column at the left side. */
@@ -1407,9 +1407,9 @@ def _top_nav():
 
       .st-key-dly_main_header [data-testid="stButton"] > button {
           width: 100% !important;
-          height: 34px !important;
-          min-height: 34px !important;
-          padding: 0 13px !important;
+          height: 38px !important;
+          min-height: 38px !important;
+          padding: 0 16px !important;
           margin: 0 !important;
           border-radius: 18px !important;
 
@@ -1418,7 +1418,7 @@ def _top_nav():
           border: 1px solid #9ac0fb !important;
           color: #102d5c !important;
 
-          font-size: .72rem !important;
+          font-size: .74rem !important;
           font-weight: 700 !important;
           line-height: 1 !important;
 
@@ -1439,8 +1439,8 @@ def _top_nav():
       }
 
       .dly-reference-logo {
-          width: 54px;
-          height: 54px;
+          width: 76px;
+          height: 76px;
           object-fit: cover;
           display: block;
           border-radius: 0;
@@ -1468,6 +1468,46 @@ def _top_nav():
           line-height: 1;
       }
 
+      /* Larger, visually consistent icons inside the navigation buttons. */
+      .st-key-top_home [data-testid="stButton"] > button::before {
+          content: "⌂";
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 21px;
+          font-weight: 900;
+          line-height: 1;
+          margin-right: 7px;
+      }
+
+      .st-key-top_docs [data-testid="stButton"] > button::before {
+          content: "▣";
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
+          font-weight: 900;
+          line-height: 1;
+          margin-right: 7px;
+      }
+
+      .st-key-top_about [data-testid="stButton"] > button::before {
+          content: "D";
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          margin-right: 7px;
+          border-radius: 5px;
+          background: #e51f2b;
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 900;
+          line-height: 1;
+          box-sizing: border-box;
+      }
+
       @media (max-width: 850px) {
           .st-key-dly_main_header {
               padding: 0 8px !important;
@@ -1475,13 +1515,13 @@ def _top_nav():
           }
 
           .dly-reference-logo {
-              width: 46px;
-              height: 46px;
+              width: 60px;
+              height: 60px;
           }
 
           .st-key-dly_main_header [data-testid="stButton"] > button {
-              height: 31px !important;
-              min-height: 31px !important;
+              height: 33px !important;
+              min-height: 33px !important;
               font-size: .61rem !important;
               padding: 0 7px !important;
           }
@@ -1510,15 +1550,15 @@ def _top_nav():
             )
 
         with c2:
-            if st.button("⌂  Home", use_container_width=True, key="top_home"):
+            if st.button("Home", use_container_width=True, key="top_home"):
                 _set_page("home")
 
         with c3:
-            if st.button("▣  Document AI", use_container_width=True, key="top_docs"):
+            if st.button("Document AI", use_container_width=True, key="top_docs"):
                 _set_page("document_ai")
 
         with c4:
-            if st.button("D  About Dilytics", use_container_width=True, key="top_about"):
+            if st.button("About Dilytics", use_container_width=True, key="top_about"):
                 _set_page("about")
 
 
