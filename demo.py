@@ -1357,41 +1357,27 @@ def _logout():
 
 
 def _top_nav():
-    """Premium, compact Dilytics navigation inspired by the supplied reference."""
-    logo_uri = "data:image/jpeg;base64," + "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"
+    """Clean, professionally aligned Dilytics navigation."""
+    logo_uri = "data:image/jpeg;base64,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"
 
     st.markdown("""
     <style>
-      /* ================================================================
-         DILYTICS — PREMIUM TOP NAVIGATION
-         ================================================================ */
-
+      /* CLEAN DILYTICS NAVIGATION */
       .st-key-dly_main_header {
           width: 100% !important;
           max-width: none !important;
-          min-height: 76px !important;
           box-sizing: border-box !important;
-
-          background:
-              linear-gradient(180deg, #151d3d 0%, #101831 100%) !important;
-
-          border-top: 2px solid #2684d8 !important;
-          border-bottom: 1px solid rgba(255,255,255,.08) !important;
+          background: transparent !important;
+          border: 0 !important;
           border-radius: 0 !important;
-
-          padding: 0 30px !important;
-          margin: -12px 0 24px 0 !important;
-
-          box-shadow:
-              0 8px 26px rgba(8,18,48,.20),
-              inset 0 -1px 0 rgba(255,255,255,.035) !important;
-
-          display: flex !important;
-          align-items: center !important;
+          padding: 8px 28px !important;
+          margin: -10px 0 18px 0 !important;
+          box-shadow: none !important;
       }
 
       .st-key-dly_main_header > div,
       .st-key-dly_main_header > div > div {
+          width: 100% !important;
           box-sizing: border-box !important;
       }
 
@@ -1399,27 +1385,29 @@ def _top_nav():
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          height: 100% !important;
+          min-height: 58px !important;
       }
 
       .st-key-dly_main_header [data-testid="column"]:first-child {
           justify-content: flex-start !important;
       }
 
-      /* Logo is deliberately contained inside the navy bar. */
+      /* Exact supplied DILYTICS logo. It remains horizontal and fully visible. */
       .dly-reference-logo {
-          width: 164px !important;
-          height: 55px !important;
+          width: 178px !important;
+          height: 60px !important;
+          max-width: 100% !important;
           object-fit: contain !important;
           object-position: left center !important;
           display: block !important;
           margin: 0 !important;
+          padding: 0 !important;
           border: 0 !important;
           border-radius: 0 !important;
           box-shadow: none !important;
       }
 
-      /* Navigation elements occupy only the space they need. */
+      /* Right navigation cluster. */
       .st-key-top_home,
       .st-key-top_docs,
       .st-key-top_about {
@@ -1432,203 +1420,111 @@ def _top_nav():
       .st-key-top_home [data-testid="stButton"],
       .st-key-top_docs [data-testid="stButton"],
       .st-key-top_about [data-testid="stButton"] {
-          width: auto !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
+          width: 100% !important;
       }
 
-      /* Premium pill buttons — compact, balanced and centered. */
+      /* Compact, premium controls. */
       .st-key-top_home [data-testid="stButton"] > button,
       .st-key-top_docs [data-testid="stButton"] > button,
       .st-key-top_about [data-testid="stButton"] > button {
-          height: 40px !important;
-          min-height: 40px !important;
-
+          height: 42px !important;
+          min-height: 42px !important;
+          width: 100% !important;
           border-radius: 12px !important;
-          padding: 0 16px !important;
+          padding: 0 13px !important;
 
-          background:
-              linear-gradient(180deg, #b5d2ff 0%, #91b9f4 100%) !important;
+          background: linear-gradient(
+              180deg,
+              #b7d4ff 0%,
+              #9bbff4 100%
+          ) !important;
 
-          border: 1px solid rgba(255,255,255,.65) !important;
+          border: 1px solid rgba(255,255,255,.9) !important;
+          color: #17345f !important;
 
-          color: #132e5a !important;
           font-family: "Inter", "Segoe UI", sans-serif !important;
           font-size: .73rem !important;
           font-weight: 700 !important;
-          letter-spacing: .15px !important;
+          letter-spacing: .1px !important;
 
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-
           white-space: nowrap !important;
 
           box-shadow:
-              0 4px 12px rgba(0,0,0,.14),
-              inset 0 1px 0 rgba(255,255,255,.75) !important;
+              0 3px 9px rgba(30,74,125,.16),
+              inset 0 1px 0 rgba(255,255,255,.85) !important;
 
-          transition:
-              transform .18s ease,
-              box-shadow .18s ease,
-              background .18s ease !important;
+          transition: all .18s ease !important;
       }
 
-      /* Individual compact widths prevent the long stretched appearance. */
-      .st-key-top_home [data-testid="stButton"] > button {
-          width: 118px !important;
-      }
-
-      .st-key-top_docs [data-testid="stButton"] > button {
-          width: 138px !important;
-      }
-
-      .st-key-top_about [data-testid="stButton"] > button {
-          width: 151px !important;
-      }
-
-      /* Sophisticated hover treatment. */
       .st-key-top_home [data-testid="stButton"] > button:hover,
       .st-key-top_docs [data-testid="stButton"] > button:hover,
       .st-key-top_about [data-testid="stButton"] > button:hover {
-          background:
-              linear-gradient(180deg, #c7ddff 0%, #a4c7ff 100%) !important;
-
-          color: #082454 !important;
-
-          transform: translateY(-2px) !important;
-
+          background: linear-gradient(
+              180deg,
+              #c9dfff 0%,
+              #abd0ff 100%
+          ) !important;
+          color: #092b5d !important;
+          transform: translateY(-1px) !important;
           box-shadow:
-              0 7px 18px rgba(0,0,0,.20),
-              0 0 0 3px rgba(154,192,251,.10),
-              inset 0 1px 0 rgba(255,255,255,.85) !important;
+              0 6px 14px rgba(30,74,125,.20),
+              inset 0 1px 0 rgba(255,255,255,.95) !important;
       }
 
-      /* Pressed state. */
-      .st-key-top_home [data-testid="stButton"] > button:active,
-      .st-key-top_docs [data-testid="stButton"] > button:active,
-      .st-key-top_about [data-testid="stButton"] > button:active {
-          transform: translateY(0) scale(.98) !important;
-      }
-
-      /* Remove Streamlit's default focus outline in favor of a premium ring. */
-      .st-key-top_home [data-testid="stButton"] > button:focus,
-      .st-key-top_docs [data-testid="stButton"] > button:focus,
-      .st-key-top_about [data-testid="stButton"] > button:focus {
-          outline: none !important;
-          box-shadow:
-              0 4px 12px rgba(0,0,0,.14),
-              0 0 0 3px rgba(154,192,251,.22),
-              inset 0 1px 0 rgba(255,255,255,.75) !important;
-      }
-
-      /* Large, consistent icon treatment. */
-      .st-key-top_home [data-testid="stButton"] > button::before {
-          content: "⌂";
-          width: 23px;
-          height: 23px;
+      /* Consistent icon boxes. */
+      .st-key-top_home [data-testid="stButton"] > button::before,
+      .st-key-top_docs [data-testid="stButton"] > button::before,
+      .st-key-top_about [data-testid="stButton"] > button::before {
+          width: 22px;
+          height: 22px;
           margin-right: 8px;
-
+          flex: 0 0 22px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-
-          border-radius: 7px;
-          background: rgba(255,255,255,.48);
-          color: #123a73;
-
-          font-size: 16px;
+          font-size: 13px;
           font-weight: 900;
           line-height: 1;
+          border-radius: 6px;
+          box-shadow: inset 0 1px 2px rgba(0,0,0,.08);
+      }
 
-          box-shadow: inset 0 1px 2px rgba(0,0,0,.07);
+      .st-key-top_home [data-testid="stButton"] > button::before {
+          content: "⌂";
+          background: rgba(255,255,255,.55);
+          color: #184477;
+          font-size: 16px;
       }
 
       .st-key-top_docs [data-testid="stButton"] > button::before {
           content: "▣";
-          width: 23px;
-          height: 23px;
-          margin-right: 8px;
-
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 7px;
-          background: rgba(255,255,255,.48);
-          color: #123a73;
-
-          font-size: 15px;
-          font-weight: 900;
-          line-height: 1;
-
-          box-shadow: inset 0 1px 2px rgba(0,0,0,.07);
+          background: rgba(255,255,255,.55);
+          color: #184477;
+          font-size: 14px;
       }
 
       .st-key-top_about [data-testid="stButton"] > button::before {
           content: "D";
-          width: 23px;
-          height: 23px;
-          margin-right: 8px;
-
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-
-          border-radius: 6px;
           background: #e51f2b;
-          color: #ffffff;
-
+          color: #fff;
           font-size: 12px;
-          font-weight: 900;
-          line-height: 1;
-
           box-shadow:
-              0 2px 5px rgba(229,31,43,.28),
+              0 2px 5px rgba(229,31,43,.25),
               inset 0 1px 0 rgba(255,255,255,.25);
-      }
-
-      /* Tiny accent line makes the header feel intentional rather than default. */
-      .st-key-dly_main_header::after {
-          content: "";
-          position: absolute;
-          left: 0;
-          right: 0;
-          bottom: -1px;
-          height: 1px;
-          background: linear-gradient(
-              90deg,
-              transparent 0%,
-              rgba(76,157,232,.28) 25%,
-              rgba(76,157,232,.55) 50%,
-              rgba(76,157,232,.28) 75%,
-              transparent 100%
-          );
-          pointer-events: none;
       }
 
       @media (max-width: 850px) {
           .st-key-dly_main_header {
-              min-height: 66px !important;
-              padding: 0 10px !important;
+              padding: 6px 10px !important;
+              margin-bottom: 14px !important;
           }
 
           .dly-reference-logo {
-              width: 135px !important;
-              height: 46px !important;
-          }
-
-          .st-key-top_home [data-testid="stButton"] > button {
-              width: 92px !important;
-          }
-
-          .st-key-top_docs [data-testid="stButton"] > button {
-              width: 112px !important;
-          }
-
-          .st-key-top_about [data-testid="stButton"] > button {
-              width: 126px !important;
+              width: 140px !important;
+              height: 47px !important;
           }
 
           .st-key-top_home [data-testid="stButton"] > button,
@@ -1637,47 +1533,55 @@ def _top_nav():
               height: 36px !important;
               min-height: 36px !important;
               padding: 0 8px !important;
-              font-size: .62rem !important;
+              font-size: .61rem !important;
               border-radius: 10px !important;
           }
 
           .st-key-top_home [data-testid="stButton"] > button::before,
           .st-key-top_docs [data-testid="stButton"] > button::before,
           .st-key-top_about [data-testid="stButton"] > button::before {
-              width: 20px;
-              height: 20px;
+              width: 19px;
+              height: 19px;
+              flex-basis: 19px;
               margin-right: 5px;
-              font-size: 12px;
           }
       }
     </style>
     """, unsafe_allow_html=True)
 
     with st.container(key="dly_main_header"):
-        c1, c2, c3, c4 = st.columns(
-            [5.8, 1.05, 1.25, 1.40],
-            gap="small",
+        # Two logical areas eliminate the uneven four-column spacing.
+        logo_col, nav_col = st.columns(
+            [4.7, 3.3],
+            gap="medium",
             vertical_alignment="center",
         )
 
-        with c1:
+        with logo_col:
             st.markdown(
                 f'<img class="dly-reference-logo" '
                 f'src="{logo_uri}" alt="Dilytics" />',
                 unsafe_allow_html=True,
             )
 
-        with c2:
-            if st.button("Home", use_container_width=False, key="top_home"):
-                _set_page("home")
+        with nav_col:
+            n1, n2, n3 = st.columns(
+                [1.0, 1.18, 1.32],
+                gap="small",
+                vertical_alignment="center",
+            )
 
-        with c3:
-            if st.button("Document AI", use_container_width=False, key="top_docs"):
-                _set_page("document_ai")
+            with n1:
+                if st.button("Home", use_container_width=True, key="top_home"):
+                    _set_page("home")
 
-        with c4:
-            if st.button("About Dilytics", use_container_width=False, key="top_about"):
-                _set_page("about")
+            with n2:
+                if st.button("Document AI", use_container_width=True, key="top_docs"):
+                    _set_page("document_ai")
+
+            with n3:
+                if st.button("About Dilytics", use_container_width=True, key="top_about"):
+                    _set_page("about")
 
 def _module_page(module: str):
     inventory = module == "inventory"
