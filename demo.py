@@ -1738,22 +1738,41 @@ def _top_nav():
 
 def _module_page(module: str):
     inventory = module == "inventory"
-    title = "Inventory Intelligence" if inventory else "Sales Intelligence"
-    subtitle = "Turn inventory data into clear, actionable decisions across products, warehouses and stock levels." if inventory else "Turn sales data into clear, actionable decisions across revenue, products, customers, regions and channels."
-    points = ([
-        "Track total inventory quantity, availability and inventory value.",
-        "Compare inventory value across warehouses and product categories.",
-        "Identify excess, overstocked, quarantined and out-of-stock inventory.",
-        "Find products that need urgent replenishment or reorder attention.",
-        "Analyze days of supply and inventory health using the latest snapshot.",
-    ] if inventory else [
-        "Analyze total sales, orders, discounts, taxes and shipping costs.",
-        "Identify top products and understand product-level revenue performance.",
-        "Compare sales across customer regions and order channels.",
-        "Analyze monthly sales trends and average order value.",
-        "Explore completed and cancelled orders to understand sales performance.",
-    ])
-    icon="▦" if inventory else "▥"
+    supply_chain = module == "supply_chain"
+
+    if inventory:
+        title = "Inventory Intelligence"
+        subtitle = "Turn inventory data into clear, actionable decisions across products, warehouses and stock levels."
+        points = [
+            "Track total inventory quantity, availability and inventory value.",
+            "Compare inventory value across warehouses and product categories.",
+            "Identify excess, overstocked, quarantined and out-of-stock inventory.",
+            "Find products that need urgent replenishment or reorder attention.",
+            "Analyze days of supply and inventory health using the latest snapshot.",
+        ]
+        icon = "▦"
+    elif supply_chain:
+        title = "Supply Chain Intelligence"
+        subtitle = "Turn supply chain data into clear, actionable decisions across fulfillment, logistics, suppliers and operations."
+        points = [
+            "Analyze supply chain and fulfillment performance.",
+            "Track orders, shipments and delivery trends.",
+            "Identify delays, bottlenecks and operational exceptions.",
+            "Explore supplier and logistics performance.",
+            "Monitor service levels and supply chain trends.",
+        ]
+        icon = "🚚"
+    else:
+        title = "Sales Intelligence"
+        subtitle = "Turn sales data into clear, actionable decisions across revenue, products, customers, regions and channels."
+        points = [
+            "Analyze total sales, orders, discounts, taxes and shipping costs.",
+            "Identify top products and understand product-level revenue performance.",
+            "Compare sales across customer regions and order channels.",
+            "Analyze monthly sales trends and average order value.",
+            "Explore completed and cancelled orders to understand sales performance.",
+        ]
+        icon = "▥"
     st.markdown(f"""
     <style>
       .module-hero{{padding:48px 55px;background:linear-gradient(135deg,#fff,#edf7ff);border:1px solid #cfe6ff;border-radius:28px;box-shadow:0 18px 45px rgba(23,91,160,.08)}}
@@ -1846,80 +1865,282 @@ def _open_chat():
 def _home_page():
     st.markdown("""
     <style>
-      .home-wrap{background:#fff;color:#09295f}
-      .home-hero{display:grid;grid-template-columns:1fr 1fr;gap:35px;align-items:center;padding:35px 20px 28px}
-      .home-eyebrow{letter-spacing:4px;color:#1769d2;font-weight:800}
-      .home-title{font-size:4rem;line-height:1.02;font-weight:900;color:#082d69}
-      .home-title span{color:#1769d2}
-      .home-sub{font-size:1.12rem;color:#587291;line-height:1.6;max-width:600px}
-      .home-robot{height:430px;position:relative;display:flex;align-items:center;justify-content:center}
-      .orb{width:430px;height:430px;border-radius:50%;background:radial-gradient(circle at 50% 42%,#ffffff,#e8f6ff 55%,#d6edff 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 25px rgba(31,129,225,.05),0 20px 55px rgba(23,91,160,.08);animation:pulse 4s ease-in-out infinite}
-      .home-robot-img{width:390px;max-width:86%;height:auto;object-fit:contain;filter:drop-shadow(0 25px 35px rgba(20,94,170,.18));animation:float 3.5s ease-in-out infinite}
-      .bubble{position:absolute;right:5%;top:5%;padding:18px 22px;background:#fff;border:1px solid #d4e8ff;border-radius:20px;color:#1769d2;box-shadow:0 12px 30px rgba(23,91,160,.12);font-weight:700}
-      .home-stats{display:flex;gap:35px;margin-top:25px;color:#315a88}
+      /* ================================================================
+         DILYTICS HOME — MODULE CAROUSEL
+         Three intelligence cards live in one horizontal scroll area.
+         ================================================================ */
 
-      /* Each intelligence card is ONE container: content + both buttons. */
-      .st-key-inventory_card, .st-key-sales_card{
-          background:#fff !important;
-          border:1px solid #d5eaff !important;
+      .home-hero{
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:35px;
+          align-items:center;
+          padding:35px 20px 28px;
+      }
+      .home-eyebrow{
+          letter-spacing:4px;
+          color:#1769d2;
+          font-weight:800;
+      }
+      .home-title{
+          font-size:4rem;
+          line-height:1.02;
+          font-weight:900;
+          color:#082d69;
+      }
+      .home-title span{color:#1769d2}
+      .home-sub{
+          font-size:1.12rem;
+          color:#587291;
+          line-height:1.6;
+          max-width:600px;
+      }
+      .home-robot{
+          height:430px;
+          position:relative;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+      }
+      .orb{
+          width:430px;
+          height:430px;
+          border-radius:50%;
+          background:radial-gradient(circle at 50% 42%,#ffffff,#e8f6ff 55%,#d6edff 100%);
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          box-shadow:0 0 0 25px rgba(31,129,225,.05),0 20px 55px rgba(23,91,160,.08);
+          animation:pulse 4s ease-in-out infinite;
+      }
+      .home-robot-img{
+          width:390px;
+          max-width:86%;
+          height:auto;
+          object-fit:contain;
+          filter:drop-shadow(0 25px 35px rgba(20,94,170,.18));
+          animation:float 3.5s ease-in-out infinite;
+      }
+      .bubble{
+          position:absolute;
+          right:5%;
+          top:5%;
+          padding:18px 22px;
+          background:#fff;
+          border:1px solid #d4e8ff;
+          border-radius:20px;
+          color:#1769d2;
+          box-shadow:0 12px 30px rgba(23,91,160,.12);
+          font-weight:700;
+      }
+      .home-stats{
+          display:flex;
+          gap:35px;
+          margin-top:25px;
+          color:#315a88;
+      }
+
+      /* Scrollable module rail. Streamlit's horizontal container keeps
+         all three cards on one line and provides horizontal scrolling. */
+      .dly-module-rail-hint{
+          display:flex;
+          align-items:center;
+          justify-content:space-between;
+          margin:6px 0 12px;
+          color:#6380a2;
+          font-size:.76rem;
+          font-weight:650;
+      }
+      .dly-module-rail-hint span:last-child{
+          color:#1769d2;
+          font-weight:750;
+      }
+
+      /* Style the horizontal Streamlit container as a clean carousel. */
+      [data-testid="stHorizontalBlock"]{
+          scroll-behavior:smooth;
+      }
+
+      .st-key-inventory_card,
+      .st-key-sales_card,
+      .st-key-supply_chain_card{
+          background:#ffffff !important;
+          border:1px solid #d8e9f8 !important;
           border-radius:22px !important;
-          padding:28px !important;
-          box-shadow:0 15px 40px rgba(23,91,160,.07) !important;
+          padding:27px !important;
+          box-shadow:
+              0 14px 38px rgba(23,91,160,.075),
+              0 2px 7px rgba(23,91,160,.035) !important;
           box-sizing:border-box !important;
+          min-height:445px !important;
           height:100% !important;
+          transition:
+              transform .2s ease,
+              box-shadow .2s ease,
+              border-color .2s ease !important;
       }
-      .st-key-inventory_card > div, .st-key-sales_card > div{gap:0 !important;}
-      .module-card-container{box-sizing:border-box !important;}
-      .module-card-container h2{color:#082d69;margin-top:0;margin-bottom:12px}
-      .module-card-container p{color:#587291;line-height:1.55}
-      .module-card-container li{margin:9px 0;color:#183e70}
-      .module-card-actions{margin-top:24px}
+
+      .st-key-inventory_card:hover,
+      .st-key-sales_card:hover,
+      .st-key-supply_chain_card:hover{
+          transform:translateY(-3px) !important;
+          border-color:#b9d9f5 !important;
+          box-shadow:
+              0 20px 45px rgba(23,91,160,.12),
+              0 3px 9px rgba(23,91,160,.05) !important;
+      }
+
+      .module-card-container h2{
+          color:#082d69;
+          margin-top:0;
+          margin-bottom:13px;
+          font-size:1.65rem;
+          font-weight:850;
+          letter-spacing:-.2px;
+      }
+      .module-card-container p{
+          color:#587291;
+          line-height:1.55;
+          min-height:50px;
+      }
+      .module-card-container li{
+          margin:9px 0;
+          color:#183e70;
+      }
+
+      .module-card-actions{
+          margin-top:23px;
+      }
+
+      /* Make action buttons larger so the icons and typography read clearly. */
       .module-card-actions [data-testid="stButton"] > button{
+          min-height:48px !important;
+          height:48px !important;
           border-radius:12px !important;
-          min-height:38px !important;
-          height:38px !important;
-          font-size:.82rem !important;
-          font-weight:700 !important;
-          color:#fff !important;
-          box-shadow:0 4px 10px rgba(8,120,200,.14) !important;
+          padding:0 15px !important;
+
+          font-family:"Inter","Segoe UI",Arial,sans-serif !important;
+          font-size:.88rem !important;
+          font-weight:800 !important;
+          letter-spacing:.05px !important;
+
+          display:flex !important;
+          align-items:center !important;
+          justify-content:center !important;
+
+          box-shadow:0 4px 12px rgba(23,91,160,.10) !important;
+          transition:all .18s ease !important;
       }
-      /* Explore buttons = blue */
+
+      /* Explore = very light sky blue, as requested. */
       .st-key-home_inv_explore [data-testid="stButton"] > button,
-      .st-key-home_sales_explore [data-testid="stButton"] > button{
-          border:1px solid #0878c8 !important;
-          background:#0878c8 !important;
-          color: #ffffff !important;
+      .st-key-home_sales_explore [data-testid="stButton"] > button,
+      .st-key-home_supply_explore [data-testid="stButton"] > button{
+          background:#dff1ff !important;
+          border:1px solid #b8ddf8 !important;
+          color:#0b5fa8 !important;
       }
+
       .st-key-home_inv_explore [data-testid="stButton"] > button:hover,
-      .st-key-home_sales_explore [data-testid="stButton"] > button:hover{
-          background:#066aae !important;
-          border-color:#066aae !important;
-          color: #ffffff !important;
+      .st-key-home_sales_explore [data-testid="stButton"] > button:hover,
+      .st-key-home_supply_explore [data-testid="stButton"] > button:hover{
+          background:#cceaff !important;
+          border-color:#91c9ef !important;
+          color:#064f8d !important;
+          transform:translateY(-1px) !important;
+          box-shadow:0 7px 17px rgba(23,105,210,.15) !important;
       }
-      /* Chat with AI buttons = red */
+
+      /* Explicit Explore icon so it cannot disappear. */
+      .st-key-home_inv_explore [data-testid="stButton"] > button::before,
+      .st-key-home_sales_explore [data-testid="stButton"] > button::before,
+      .st-key-home_supply_explore [data-testid="stButton"] > button::before{
+          content:"↗";
+          width:27px;
+          height:27px;
+          flex:0 0 27px;
+          margin-right:8px;
+
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+
+          border-radius:7px;
+          background:#ffffff;
+          color:#0b6fbd;
+          font-size:18px;
+          font-weight:900;
+          line-height:1;
+
+          box-shadow:inset 0 0 0 1px #c7e4f8;
+      }
+
+      /* Chat with AI = white premium secondary action with shadow border. */
       .st-key-home_inv_chat [data-testid="stButton"] > button,
-      .st-key-home_sales_chat [data-testid="stButton"] > button{
-          border:1px solid #e51f2b !important;
-          background:#e51f2b !important;
-          box-shadow:0 4px 10px rgba(229,31,43,.14) !important;
-          color: #ffffff !important;
+      .st-key-home_sales_chat [data-testid="stButton"] > button,
+      .st-key-home_supply_chat [data-testid="stButton"] > button{
+          background:#ffffff !important;
+          border:1px solid #cbd8e5 !important;
+          color:#173f6f !important;
+          box-shadow:
+              0 5px 14px rgba(24,63,111,.12),
+              inset 0 1px 0 rgba(255,255,255,.95) !important;
       }
+
       .st-key-home_inv_chat [data-testid="stButton"] > button:hover,
-      .st-key-home_sales_chat [data-testid="stButton"] > button:hover{
-          background:#c91823 !important;
-          border-color:#c91823 !important;
-          color: #ffffff !important;
+      .st-key-home_sales_chat [data-testid="stButton"] > button:hover,
+      .st-key-home_supply_chat [data-testid="stButton"] > button:hover{
+          background:#fafdff !important;
+          border-color:#9fb9d2 !important;
+          color:#0b4f8f !important;
+          transform:translateY(-1px) !important;
+          box-shadow:
+              0 8px 18px rgba(24,63,111,.16),
+              inset 0 1px 0 rgba(255,255,255,.98) !important;
       }
-      .home-footer{border-top:1px solid #dcecff;margin-top:35px;padding:20px 0;color:#5a7392;text-align:center}
+
+      /* Explicit Chat icon. */
+      .st-key-home_inv_chat [data-testid="stButton"] > button::before,
+      .st-key-home_sales_chat [data-testid="stButton"] > button::before,
+      .st-key-home_supply_chat [data-testid="stButton"] > button::before{
+          content:"💬";
+          width:27px;
+          height:27px;
+          flex:0 0 27px;
+          margin-right:8px;
+
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+
+          border-radius:7px;
+          background:#edf6ff;
+          color:#1769d2;
+          font-size:16px;
+          line-height:1;
+
+          box-shadow:inset 0 0 0 1px #d7e9f8;
+      }
+
+      .home-footer{
+          border-top:1px solid #dcecff;
+          margin-top:35px;
+          padding:20px 0;
+          color:#5a7392;
+          text-align:center;
+      }
+
       @keyframes float{50%{transform:translateY(-12px)}}
       @keyframes pulse{50%{transform:scale(1.03)}}
+
       @media(max-width:850px){
-          .home-hero,.module-grid{grid-template-columns:1fr}
+          .home-hero{grid-template-columns:1fr}
           .home-title{font-size:2.8rem}
           .home-robot{height:360px}
           .orb{width:330px;height:330px}
           .home-robot-img{width:310px}
           .bubble{right:0}
+          .home-stats{gap:14px;flex-wrap:wrap}
       }
     </style>
     <div class="home-hero">
@@ -1934,14 +2155,33 @@ def _home_page():
         <div class="bubble"><b>Hi!</b><br>How can I help you<br>today?</div>
       </div>
     </div>
-    """.replace("{robot_src}", _robot_data_uri()),unsafe_allow_html=True)
+    """.replace("{robot_src}", _robot_data_uri()), unsafe_allow_html=True)
 
-    # Each card is a real Streamlit container. The content and both
-    # action buttons are rendered inside the same container.
-    c1,c2=st.columns(2, gap="medium")
+    st.markdown(
+        '<div class="dly-module-rail-hint">'
+        '<span>Explore our intelligence modules</span>'
+        '<span>← Scroll horizontally to view Supply Chain →</span>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
 
-    with c1:
-        with st.container(key="inventory_card"):
+    # A horizontal Streamlit container keeps all three cards in one row.
+    # Each card has a fixed width so the rail becomes horizontally scrollable
+    # instead of shrinking the cards into a three-column grid.
+    try:
+        module_rail = st.container(
+            horizontal=True,
+            gap="medium",
+            horizontal_alignment="left",
+            vertical_alignment="top",
+            height=500,
+        )
+    except TypeError:
+        # Compatibility fallback for older Streamlit versions.
+        module_rail = st.container()
+
+    with module_rail:
+        with st.container(key="inventory_card", width=430):
             st.markdown("""
             <div class="module-card-container">
               <h2>▦ &nbsp; Inventory Intelligence</h2>
@@ -1957,15 +2197,14 @@ def _home_page():
             st.markdown('<div class="module-card-actions">', unsafe_allow_html=True)
             a,b=st.columns(2, gap="small")
             with a:
-                if st.button("⌁ Explore Inventory",use_container_width=True,key="home_inv_explore"):
+                if st.button("Explore Inventory", use_container_width=True, key="home_inv_explore"):
                     _set_page("inventory")
             with b:
-                if st.button("◯ Chat with AI",use_container_width=True,key="home_inv_chat"):
+                if st.button("Chat with AI", use_container_width=True, key="home_inv_chat"):
                     _open_chat()
             st.markdown('</div>', unsafe_allow_html=True)
 
-    with c2:
-        with st.container(key="sales_card"):
+        with st.container(key="sales_card", width=430):
             st.markdown("""
             <div class="module-card-container">
               <h2>▥ &nbsp; Sales Intelligence</h2>
@@ -1981,14 +2220,42 @@ def _home_page():
             st.markdown('<div class="module-card-actions">', unsafe_allow_html=True)
             a,b=st.columns(2, gap="small")
             with a:
-                if st.button("⌁ Explore Sales",use_container_width=True,key="home_sales_explore"):
+                if st.button("Explore Sales", use_container_width=True, key="home_sales_explore"):
                     _set_page("sales")
             with b:
-                if st.button("◯ Chat with AI",use_container_width=True,key="home_sales_chat"):
+                if st.button("Chat with AI", use_container_width=True, key="home_sales_chat"):
                     _open_chat()
             st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown('<div class="home-footer">© 2026 DiLytics. All rights reserved. &nbsp; | &nbsp; Powered by Snowflake &nbsp; | &nbsp; Secure & Compliant &nbsp; | &nbsp; Insights Made Simple</div>',unsafe_allow_html=True)
+        with st.container(key="supply_chain_card", width=430):
+            st.markdown("""
+            <div class="module-card-container">
+              <h2>🚚 &nbsp; Supply Chain Intelligence</h2>
+              <p>Monitor supply chain performance, fulfillment, logistics and operational trends across your network.</p>
+              <ul>
+                <li>Analyze supply chain and fulfillment performance</li>
+                <li>Track orders, shipments and delivery trends</li>
+                <li>Identify delays, bottlenecks and exceptions</li>
+                <li>Explore supplier and logistics performance</li>
+              </ul>
+            </div>
+            """, unsafe_allow_html=True)
+            st.markdown('<div class="module-card-actions">', unsafe_allow_html=True)
+            a,b=st.columns(2, gap="small")
+            with a:
+                if st.button("Explore Supply Chain", use_container_width=True, key="home_supply_explore"):
+                    _set_page("supply_chain")
+            with b:
+                if st.button("Chat with AI", use_container_width=True, key="home_supply_chat"):
+                    _open_chat()
+            st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown(
+        '<div class="home-footer">© 2026 DiLytics. All rights reserved. &nbsp; | &nbsp; '
+        'Powered by Snowflake &nbsp; | &nbsp; Secure & Compliant &nbsp; | &nbsp; '
+        'Insights Made Simple</div>',
+        unsafe_allow_html=True,
+    )
 
 
 # Initialize route state and render non-chat pages.
@@ -2002,6 +2269,7 @@ if st.session_state.app_page != "chatbot":
     elif page=="login": _login_page()
     elif page=="inventory": _module_page("inventory")
     elif page=="sales": _module_page("sales")
+    elif page=="supply_chain": _module_page("supply_chain")
     elif page=="document_ai": _document_ai_page()
     elif page=="about": _about_page()
     st.stop()
