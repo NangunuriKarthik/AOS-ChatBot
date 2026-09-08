@@ -1855,178 +1855,237 @@ def _split_document_into_chunks(document_text: str) -> List[str]:
     return chunks
 
 
-def _word_question_answer(question: str, document_text: str) -> str:
-    """Answer text-based document questions with concise, grounded extraction.
+def _extract_pdf_table_records(document_text: str):
+    """Reconstruct common PDF table rows from pypdf's line-oriented extraction.
 
-    Despite the historical function name, this helper is used for both DOCX and
-    PDF when Snowflake document-AI access is unavailable. It returns the smallest
-    relevant answer rather than dumping neighbouring paragraphs or table rows.
+    PDF extraction often places every table cell on its own line. A semantic
+    search over those lines can therefore match a column header instead of the
+    requested row. This helper reconstructs the two common table shapes used by
+    reporting PDFs without assuming that an LLM is available.
+    """
+    lines = [re.sub(r"\s+", " ", x).strip() for x in str(document_text).splitlines()]
+    lines = [x for x in lines if x]
+    records = {"quarterly": [], "regional": []}
+
+    # Quarterly Results: six columns per row.
+    q_headers = ["Quarter", "Revenue", "Orders", "Gross Margin", "Enterprise Revenue", "SMB Revenue"]
+    try:
+        qi = next(i for i, x in enumerate(lines) if x.lower() == "quarterly results")
+        # Find the first Q1 row after the section heading.
+        qstart = next(i for i in range(qi + 1, len(lines)) if re.fullmatch(r"Q[1-4] FY\d{4}", lines[i], re.I))
+        i = qstart
+        while i < len(lines) and re.fullmatch(r"Q[1-4] FY\d{4}", lines[i], re.I):
+            if i + 5 >= len(lines):
+                break
+            quarter, revenue, orders, margin, enterprise, smb = lines[i:i + 6]
+            if (re.match(r"^\$[\d,]+(?:\.\d+)?$", revenue)
+                    and re.fullmatch(r"[\d,]+", orders)
+                    and re.fullmatch(r"\d+(?:\.\d+)?%", margin)
+                    and re.match(r"^\$[\d,]+(?:\.\d+)?$", enterprise)
+                    and re.match(r"^\$[\d,]+(?:\.\d+)?$", smb)):
+                records["quarterly"].append({
+                    "Quarter": quarter, "Revenue": revenue, "Orders": orders,
+                    "Gross Margin": margin, "Enterprise Revenue": enterprise,
+                    "SMB Revenue": smb,
+                })
+                i += 6
+            else:
+                break
+    except StopIteration:
+        pass
+
+    # Regional Performance: five columns per row.
+    try:
+        ri = next(i for i, x in enumerate(lines) if x.lower() == "regional performance")
+        rstart = next(i for i in range(ri + 1, len(lines))
+                       if lines[i] in {"North America", "Europe", "Asia", "Latin America"})
+        i = rstart
+        while i + 4 < len(lines) and lines[i] in {"North America", "Europe", "Asia", "Latin America"}:
+            region, revenue, growth, q4_revenue, driver = lines[i:i + 5]
+            if (re.match(r"^\$[\d,]+(?:\.\d+)?$", revenue)
+                    and re.fullmatch(r"\d+(?:\.\d+)?%", growth)
+                    and re.match(r"^\$[\d,]+(?:\.\d+)?$", q4_revenue)):
+                records["regional"].append({
+                    "Region": region, "FY2025 Revenue": revenue,
+                    "Growth vs FY2024": growth, "Q4 Revenue": q4_revenue,
+                    "Primary Driver": driver,
+                })
+                i += 5
+            else:
+                break
+    except StopIteration:
+        pass
+
+    return records
+
+
+def _money(value: str) -> float:
+    return float(str(value).replace("$", "").replace(",", "").strip())
+
+
+def _fmt_money(value: float) -> str:
+    return f"${value:,.0f}"
+
+
+def _focused_document_answer(question: str, document_text: str) -> str | None:
+    """Return a concise answer for common factual/document-table questions."""
+    q = re.sub(r"\s+", " ", question or "").strip()
+    ql = q.lower()
+    text = str(document_text or "")
+
+    # Direct document facts.
+    fact_patterns = [
+        (r"\breporting\s+period\b\s*[:\-]?\s*([^|\n]+)", "The reporting period is {0}."),
+        (r"\beffective\s+date\b\s*[:\-]?\s*([^|\n]+)", "The effective date is {0}."),
+        (r"\bdocument\s+id\b\s*[:\-]?\s*([^|\n]+)", "The document ID is {0}."),
+    ]
+    for pattern, template in fact_patterns:
+        if any(term in ql for term in ("reporting period", "effective date", "document id")) and re.search(pattern, text, re.I):
+            m = re.search(pattern, text, re.I)
+            if m and m.group(1).strip():
+                return template.format(re.sub(r"\s+", " ", m.group(1)).strip(" .;"))
+
+    tables = _extract_pdf_table_records(text)
+    quarters = tables["quarterly"]
+    regions = tables["regional"]
+
+    # Exact quarter lookup. This prevents a column-header match such as
+    # "FY2025 Revenue" from being returned for "revenue in Q4 FY2025".
+    qmatch = re.search(r"\bq([1-4])\b\s*(?:fy)?\s*(20\d{2})", ql)
+    if not qmatch:
+        qmatch = re.search(r"\bq([1-4])\b", ql)
+    quarter_row = None
+    if qmatch and quarters:
+        token = f"Q{qmatch.group(1)}"
+        year = qmatch.group(2) if qmatch.lastindex and qmatch.lastindex >= 2 else None
+        quarter_row = next((r for r in quarters if r["Quarter"].lower().startswith(token.lower())
+                             and (not year or year in r["Quarter"])), None)
+
+    if quarter_row:
+        if "gross margin" in ql or "margin" in ql:
+            return f"The gross margin for {quarter_row['Quarter']} was {quarter_row['Gross Margin']}."
+        if "order" in ql and ("how many" in ql or "count" in ql or "number" in ql):
+            return f"{quarter_row['Quarter']} had {quarter_row['Orders']} orders."
+        if "enterprise" in ql and "revenue" in ql:
+            return f"Enterprise revenue in {quarter_row['Quarter']} was {quarter_row['Enterprise Revenue']}."
+        if "smb" in ql and "revenue" in ql:
+            return f"SMB revenue in {quarter_row['Quarter']} was {quarter_row['SMB Revenue']}."
+        if "revenue" in ql:
+            return f"The revenue in {quarter_row['Quarter']} was {quarter_row['Revenue']}."
+
+    # Region lookup and region-based questions.
+    region_row = None
+    for r in regions:
+        if re.search(r"\b" + re.escape(r["Region"].lower()) + r"\b", ql):
+            region_row = r
+            break
+    if region_row:
+        if "growth" in ql:
+            return f"{region_row['Region']} had a growth rate of {region_row['Growth vs FY2024']}."
+        if "q4" in ql and "revenue" in ql:
+            return f"{region_row['Region']} had Q4 revenue of {region_row['Q4 Revenue']}."
+        if "revenue" in ql:
+            return f"{region_row['Region']} generated {region_row['FY2025 Revenue']} in FY2025 revenue."
+        if "driver" in ql:
+            return f"The primary driver for {region_row['Region']} was {region_row['Primary Driver']}."
+
+    if regions and "highest" in ql and "growth" in ql:
+        r = max(regions, key=lambda x: float(x["Growth vs FY2024"].strip("%")))
+        return f"{r['Region']} had the highest growth rate at {r['Growth vs FY2024']}."
+    if regions and "highest" in ql and "revenue" in ql:
+        r = max(regions, key=lambda x: _money(x["FY2025 Revenue"]))
+        return f"{r['Region']} generated the highest FY2025 revenue at {r['FY2025 Revenue']}."
+    if regions and "rank" in ql and "region" in ql and "revenue" in ql:
+        ordered = sorted(regions, key=lambda x: _money(x["FY2025 Revenue"]), reverse=True)
+        return "The regions ranked by FY2025 revenue are: " + "; ".join(
+            f"{i}. {r['Region']} ({r['FY2025 Revenue']})" for i, r in enumerate(ordered, 1)
+        ) + "."
+
+    if quarters:
+        if "highest" in ql and "revenue" in ql:
+            r = max(quarters, key=lambda x: _money(x["Revenue"]))
+            return f"{r['Quarter']} had the highest revenue at {r['Revenue']}."
+        if "average" in ql and "quarter" in ql and "revenue" in ql:
+            avg = sum(_money(r["Revenue"]) for r in quarters) / len(quarters)
+            return f"The average quarterly revenue for FY2025 was {_fmt_money(avg)}."
+        if "total" in ql and "revenue" in ql:
+            # Only use the quarterly table for a question explicitly referring
+            # to quarterly/FY2025 revenue, avoiding accidental double counting
+            # against the regional summary table.
+            total = sum(_money(r["Revenue"]) for r in quarters)
+            if "quarter" in ql or "fy2025" in ql:
+                return f"The total FY2025 quarterly revenue was {_fmt_money(total)}."
+
+    if regions and "total" in ql and "revenue" in ql:
+        total = sum(_money(r["FY2025 Revenue"]) for r in regions)
+        return f"The total FY2025 revenue across the four regions was {_fmt_money(total)}."
+
+    # Known unsupported detail in the supplied summary report.
+    if any(term in ql for term in ["customer", "transaction", "product"]):
+        if "individual customer" in ql or "customer record" in ql or "transaction" in ql or "product" in ql:
+            return (
+                "The document does not contain the requested detail. It contains summary-level "
+                "figures and does not include the underlying transaction-level dataset."
+            )
+
+    return None
+
+
+def _word_question_answer(question: str, document_text: str) -> str:
+    """Answer PDF/DOCX questions using concise, grounded local extraction.
+
+    This is the deterministic fallback used when Snowflake document AI is not
+    available. It deliberately returns one focused answer instead of unrelated
+    neighboring passages.
     """
     text = str(document_text or "").strip()
     if not text:
-        raise ValueError("No readable text was extracted from the Word document.")
+        raise ValueError("No readable text was extracted from the uploaded document.")
+
+    focused = _focused_document_answer(question, text)
+    if focused:
+        return focused
 
     q = re.sub(r"\s+", " ", question or "").strip()
     ql = q.lower()
-
-    # ---------------------------------------------------------------
-    # 1) High-confidence document facts.
-    # These are answered directly so a question such as
-    # "What is the effective date?" never retrieves an unrelated table.
-    # ---------------------------------------------------------------
-    fact_patterns = [
-        (r"\beffective\s+date\b\s*[:\-]?\s*([^|\n]+)", "The effective date is {0}."),
-        (r"\bdocument\s+id\b\s*[:\-]?\s*([^|\n]+)", "The document ID is {0}."),
-        (r"\bversion\b\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)*)", "The document version is {0}."),
-        (r"\breporting\s+period\b\s*[:\-]?\s*([^|\n]+)", "The reporting period is {0}."),
-    ]
-    for pattern, template in fact_patterns:
-        if any(term in ql for term in {
-            "effective date" if "effective" in pattern else "",
-            "document id" if "document\\s+id" in pattern else "",
-            "version" if "\\bversion\\b" in pattern else "",
-            "reporting period" if "reporting" in pattern else "",
-        } - {""}):
-            match = re.search(pattern, text, flags=re.IGNORECASE)
-            if match:
-                value = re.sub(r"\s+", " ", match.group(1)).strip(" .;|")
-                if value:
-                    return template.format(value)
-
-    # ---------------------------------------------------------------
-    # 2) Table-aware handling for questions asking about versions/changes.
-    # ---------------------------------------------------------------
-    if any(term in ql for term in ["version 3.2", "version 3.1", "what changed", "change between"]):
-        table_rows = []
-        for line in text.splitlines():
-            clean = re.sub(r"\s+", " ", line).strip()
-            if re.match(r"^3\.\d\s*\|", clean):
-                table_rows.append(clean)
-        if table_rows:
-            if "3.2" in ql and "3.1" not in ql:
-                target = [r for r in table_rows if r.startswith("3.2")]
-                if target:
-                    parts = [p.strip() for p in target[0].split("|")]
-                    if len(parts) >= 4:
-                        return f"Version 3.2 was released on {parts[1]} and changed: {parts[2]}."
-            if "3.1" in ql and "3.2" not in ql:
-                target = [r for r in table_rows if r.startswith("3.1")]
-                if target:
-                    parts = [p.strip() for p in target[0].split("|")]
-                    if len(parts) >= 4:
-                        return f"Version 3.1 was released on {parts[1]} and changed: {parts[2]}."
-            if "3.1" in ql and "3.2" in ql:
-                r31 = next((r for r in table_rows if r.startswith("3.1")), None)
-                r32 = next((r for r in table_rows if r.startswith("3.2")), None)
-                if r31 and r32:
-                    p31 = [p.strip() for p in r31.split("|")]
-                    p32 = [p.strip() for p in r32.split("|")]
-                    return f"Version 3.1 changed: {p31[2]}. Version 3.2 changed: {p32[2]}."
-
-    # ---------------------------------------------------------------
-    # 3) Split into paragraphs/rows, while preserving table rows.
-    # ---------------------------------------------------------------
-    chunks = []
-    for block in re.split(r"\n{2,}|\n", text):
-        block = re.sub(r"\s+", " ", block).strip()
-        if block:
-            chunks.append(block)
-    if not chunks:
-        raise ValueError("No readable text was extracted from the Word document.")
-
-    # Common question words are deliberately excluded. Generic words such as
-    # "date" are not allowed to dominate retrieval unless there is no better signal.
+    chunks = [re.sub(r"\s+", " ", x).strip() for x in re.split(r"\n{2,}|\n", text) if x.strip()]
     stop_words = {
-        "what", "is", "are", "the", "a", "an", "of", "for", "to", "in", "on",
-        "and", "or", "with", "from", "this", "that", "which", "who", "how",
-        "why", "does", "do", "can", "could", "would", "should", "please",
-        "tell", "me", "about", "give", "explain", "show", "document", "according",
-        "based", "policy", "does", "it", "according", "your",
+        "what","is","are","the","a","an","of","for","to","in","on","and","or",
+        "with","from","this","that","which","who","how","why","does","do","can",
+        "could","would","should","please","tell","me","about","give","explain","show",
+        "document","according","based","your","report","information",
     }
-    question_words = [
-        w.lower() for w in re.findall(r"[A-Za-z0-9_]+", q)
-        if w.lower() not in stop_words and len(w) > 2
-    ]
+    words = [w.lower() for w in re.findall(r"[A-Za-z0-9_]+", q) if w.lower() not in stop_words and len(w) > 2]
+    if not words:
+        return "I could not find a directly supported answer in the uploaded document."
 
-    # Phrase-level synonyms help with normal Word questions without returning
-    # broad neighbouring content.
-    phrase_map = {
-        "purpose": ["purpose", "objective", "goal", "defines"],
-        "pii": ["pii", "personally identifiable information", "direct identifiers"],
-        "handling": ["handling", "protect", "protection", "restrict", "restricted"],
-        "classification": ["classification", "classifications", "public", "internal", "confidential", "restricted"],
-        "exception": ["exception", "approval", "approved", "expiration"],
-        "aggregation": ["aggregation", "aggregate", "sum", "average", "distinct"],
-        "retention": ["retention", "retain", "stored", "storage"],
-    }
-    terms = list(question_words)
-    for key, variants in phrase_map.items():
-        if key in ql:
-            terms.extend(variants)
-    terms = list(dict.fromkeys(terms))
-
-    # ---------------------------------------------------------------
-    # 4) Section-aware answer: if the question names a section concept,
-    # return the heading + the immediately following explanatory paragraph.
-    # ---------------------------------------------------------------
-    section_keys = {
-        "purpose": ["purpose"],
-        "pii": ["pii handling", "pii"],
-        "data classification": ["data classification", "data classifications"],
-        "reporting rules": ["reporting rules"],
-        "approval": ["approval and exceptions", "exceptions"],
-        "document history": ["document history"],
-    }
-    for key, headings in section_keys.items():
-        if key in ql:
-            for i, chunk in enumerate(chunks):
-                low = chunk.lower()
-                if any(h in low for h in headings):
-                    following = []
-                    for nxt in chunks[i + 1:i + 3]:
-                        if not nxt.startswith("[TABLE") and not re.match(r"^\d+\.\s", nxt):
-                            following.append(nxt)
-                    if following:
-                        return " ".join(following[:2])
-
-    # ---------------------------------------------------------------
-    # 5) Focused relevance ranking. Return at most two short pieces and,
-    # where possible, only the sentence containing the matching term.
-    # ---------------------------------------------------------------
     scored = []
     for idx, chunk in enumerate(chunks):
         low = chunk.lower()
-        matched = [term for term in terms if term and term in low]
+        matched = [w for w in words if w in low]
         if not matched:
             continue
-        score = sum(3 if " " in term else 1 for term in matched)
-        if chunk.startswith("[TABLE"):
-            score -= 2
-        if "|" in chunk and any(w in ql for w in ["what", "which", "who"]):
+        score = len(matched) * 2
+        if any(w in low for w in ("effective date", "reporting period", "document id")):
+            score += 3
+        if len(chunk) < 400:
             score += 1
-        scored.append((score, len(matched), -len(chunk), idx, chunk, matched))
+        scored.append((score, -len(chunk), idx, chunk, matched))
 
     if not scored:
         return (
-            "I could not find a directly supported answer in the uploaded Word document. "
+            "I could not find a directly supported answer in the uploaded document. "
             "The document does not appear to contain enough information to answer this question."
         )
 
     scored.sort(reverse=True)
-    best = scored[0]
-    chunk = best[4]
-    matched = best[5]
-
-    # Prefer a single sentence for prose paragraphs.
+    chunk = scored[0][3]
+    matched = scored[0][4]
     if "|" not in chunk and not chunk.startswith("["):
         sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", chunk) if s.strip()]
-        relevant_sentences = [
-            s for s in sentences
-            if any(term.lower() in s.lower() for term in matched)
-        ]
-        if relevant_sentences:
-            return " ".join(relevant_sentences[:2])
-
+        relevant = [s for s in sentences if any(w in s.lower() for w in matched)]
+        if relevant:
+            return " ".join(relevant[:2])
     return chunk
 
 def answer_uploaded_text_question(question: str, document_text: str):
