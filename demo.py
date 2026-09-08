@@ -2344,6 +2344,23 @@ def _document_ai_page():
                 st.session_state.uploaded_document_table=None
                 st.session_state.uploaded_document_semantic_model=None
                 if doc_type=="table": prepare_uploaded_table(doc_df)
+
+            # Preserve the upload as a chat event when Document AI is opened
+            # from the top navigation. The chatbot renders this pending event
+            # after its chat-session state has been initialized, so the upload
+            # preview appears in the conversation just like a sidebar upload.
+            st.session_state.pending_document_chat_event = {
+                "role": "assistant",
+                "content": f"📄 **Document analyzed:** `{uploaded.name}`\n\n{doc_message}",
+                "sql": None,
+                "data": None,
+                "semantic_model": "Uploaded Document",
+                "verified_query": None,
+                "document_event": True,
+                "document_name": uploaded.name,
+                "document_type": doc_type,
+            }
+
             st.session_state.answer_source="Uploaded Document"
             st.session_state.app_page="chatbot"
             st.success(doc_message)
