@@ -1698,27 +1698,32 @@ def _top_nav():
           overflow: visible !important;
       }
 
-      .st-key-dly_main_header [data-testid="column"]:last-child {
-          position: absolute !important;
-          top: 14px !important;
-          right: 58px !important;
-          width: max-content !important;
-          max-width: calc(100% - 330px) !important;
+      /* The navigation occupies its own responsive half of the header.
+         Nothing is absolutely positioned, so zooming cannot make one
+         button overlap another. */
+      .st-key-dly_main_header > div > [data-testid="column"]:last-child {
+          min-width: 0 !important;
+          display: flex !important;
           justify-content: flex-end !important;
-          flex: 0 0 auto !important;
-          z-index: 25 !important;
       }
 
-      .st-key-dly_main_header [data-testid="column"]:last-child > div {
-          width: max-content !important;
-          max-width: 100% !important;
-          margin-left: auto !important;
+      .st-key-dly_main_header > div > [data-testid="column"]:last-child > div {
+          width: 100% !important;
+          min-width: 0 !important;
       }
 
-      .st-key-dly_main_header [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] {
-          width: max-content !important;
-          max-width: 100% !important;
+      .st-key-dly_main_header > div > [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] {
+          width: 100% !important;
+          min-width: 0 !important;
+          justify-content: flex-end !important;
+          align-items: center !important;
           flex-wrap: nowrap !important;
+          gap: 10px !important;
+      }
+
+      .st-key-dly_main_header > div > [data-testid="column"]:last-child [data-testid="column"] {
+          min-width: 0 !important;
+          flex: 0 1 auto !important;
       }
 
       .st-key-top_home,
@@ -1740,14 +1745,20 @@ def _top_nav():
       /* Exact reference-like proportions. */
       .st-key-top_home [data-testid="stButton"] > button {
           width: 144px !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
       }
 
       .st-key-top_docs [data-testid="stButton"] > button {
           width: 200px !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
       }
 
       .st-key-top_about [data-testid="stButton"] > button {
           width: 223px !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
       }
 
       .st-key-top_home [data-testid="stButton"] > button,
@@ -1936,6 +1947,43 @@ def _top_nav():
           }
       }
 
+      @media (max-width: 900px) {
+          .st-key-dly_main_header > div > [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] {
+              gap: 6px !important;
+          }
+
+          .st-key-top_home [data-testid="stButton"] > button {
+              width: 96px !important;
+          }
+
+          .st-key-top_docs [data-testid="stButton"] > button {
+              width: 122px !important;
+          }
+
+          .st-key-top_about [data-testid="stButton"] > button {
+              width: 128px !important;
+          }
+
+          .st-key-top_home [data-testid="stButton"] > button,
+          .st-key-top_docs [data-testid="stButton"] > button,
+          .st-key-top_about [data-testid="stButton"] > button {
+              height: 44px !important;
+              min-height: 44px !important;
+              padding: 0 8px !important;
+              font-size: .72rem !important;
+          }
+
+          .st-key-top_home [data-testid="stButton"] > button::before,
+          .st-key-top_docs [data-testid="stButton"] > button::before,
+          .st-key-top_about [data-testid="stButton"] > button::before {
+              width: 23px;
+              height: 23px;
+              flex-basis: 23px;
+              margin-right: 6px;
+              font-size: 14px;
+          }
+      }
+
       @media (max-width: 1050px) {
           .st-key-dly_main_header {
               padding: 10px 18px !important;
@@ -1989,10 +2037,22 @@ def _top_nav():
               min-height: 52px !important;
           }
 
-          .st-key-dly_main_header [data-testid="column"]:last-child {
-              top: 8px !important;
-              right: 10px !important;
-              max-width: calc(100% - 145px) !important;
+          .st-key-dly_main_header > div {
+              gap: 6px !important;
+          }
+
+          .st-key-dly_main_header > div > [data-testid="column"]:first-child {
+              flex: 0 0 34% !important;
+              width: 34% !important;
+          }
+
+          .st-key-dly_main_header > div > [data-testid="column"]:last-child {
+              flex: 0 0 66% !important;
+              width: 66% !important;
+          }
+
+          .st-key-dly_main_header > div > [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] {
+              gap: 4px !important;
           }
 
           .dly-reference-logo {
@@ -2009,15 +2069,15 @@ def _top_nav():
           }
 
           .st-key-top_home [data-testid="stButton"] > button {
-              width: 78px !important;
+              width: 70px !important;
           }
 
           .st-key-top_docs [data-testid="stButton"] > button {
-              width: 100px !important;
+              width: 88px !important;
           }
 
           .st-key-top_about [data-testid="stButton"] > button {
-              width: 108px !important;
+              width: 96px !important;
           }
 
           .st-key-top_home [data-testid="stButton"] > button,
@@ -2026,8 +2086,9 @@ def _top_nav():
               height: 38px !important;
               min-height: 38px !important;
               border-radius: 9px !important;
-              padding: 0 6px !important;
-              font-size: .58rem !important;
+              padding: 0 4px !important;
+              font-size: .56rem !important;
+              box-sizing: border-box !important;
           }
 
           .st-key-top_home [data-testid="stButton"] > button::before,
@@ -2046,8 +2107,11 @@ def _top_nav():
     with st.container(key="dly_main_header"):
         # The right area is intentionally narrow enough that the buttons
         # stay together, just like the reference image.
+        # Keep a dedicated half-width navigation zone. This prevents the
+        # three fixed-size navigation buttons from competing with the logo
+        # when browser zoom changes the effective viewport width.
         logo_col, nav_col = st.columns(
-            [6.0, 3.0],
+            [1.0, 1.0],
             gap="small",
             vertical_alignment="center",
         )
