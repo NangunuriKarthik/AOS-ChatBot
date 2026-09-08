@@ -272,12 +272,17 @@ section[data-testid="stSidebar"] .stButton > button:active {
 section[data-testid="stSidebar"] .stButton[kind="primary"] > button {
     background:#ffffff !important;
     border:1px solid #d9d9de !important;
+    border-radius:9px !important;
     color:#111827 !important;
-    font-weight:600 !important;
+    font-weight:500 !important;
+    min-height:42px !important;
+    height:42px !important;
+    padding:0 14px !important;
     box-shadow:0 1px 2px rgba(0,0,0,.04) !important;
 }
 section[data-testid="stSidebar"] .stButton[kind="primary"] > button:hover {
     background:#f1f1f3 !important;
+    border:1px solid #d1d1d6 !important;
 }
 
 /* Section labels */
