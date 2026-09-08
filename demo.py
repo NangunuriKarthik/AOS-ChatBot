@@ -2371,22 +2371,248 @@ def _document_ai_page():
 def _about_page():
     st.markdown("""
     <style>
-      .about-hero{padding:45px;background:linear-gradient(135deg,#fff,#edf7ff);border:1px solid #cfe6ff;border-radius:28px}.about-title{font-size:3rem;font-weight:900;color:#082d69}.about-sub{font-size:1.1rem;color:#587291;line-height:1.7;max-width:900px}.about-card{padding:24px;background:#fff;border:1px solid #dbeeff;border-radius:18px;height:100%;box-shadow:0 10px 28px rgba(23,91,160,.06)}.about-card h3{color:#1769d2}
+      /* ================================================================
+         ABOUT DILYTICS — MISSION / VISION / SOLUTIONS / SERVICES
+         Clean two-column card layout matching the requested design.
+         ================================================================ */
+      .about-hero{
+          padding:45px;
+          background:linear-gradient(135deg,#fff,#edf7ff);
+          border:1px solid #cfe6ff;
+          border-radius:28px;
+          margin-bottom:28px;
+      }
+      .about-title{
+          font-size:3rem;
+          font-weight:900;
+          color:#082d69;
+      }
+      .about-sub{
+          font-size:1.1rem;
+          color:#587291;
+          line-height:1.7;
+          max-width:1000px;
+      }
+
+      .about-grid{
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:26px;
+          margin:0 0 28px 0;
+      }
+      .about-feature-card{
+          background:#fff;
+          border:1px solid #cfd6df;
+          border-radius:28px;
+          overflow:hidden;
+          min-height:360px;
+          box-shadow:0 8px 24px rgba(23,91,160,.06);
+      }
+      .about-feature-top{
+          min-height:135px;
+          background:linear-gradient(135deg,#eef8ff,#dff1ff);
+          display:flex;
+          align-items:flex-end;
+          padding:28px 36px 24px;
+      }
+      .about-heading-row{
+          display:flex;
+          align-items:center;
+          gap:20px;
+      }
+      .about-icon{
+          width:88px;
+          height:88px;
+          border-radius:12px;
+          background:#eef7ff;
+          border:1px solid #d8ecff;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          font-size:46px;
+          flex:0 0 88px;
+      }
+      .about-feature-title{
+          font-size:2.45rem;
+          line-height:1.05;
+          font-weight:800;
+          color:#29476d;
+          margin:0;
+      }
+      .about-underline{
+          width:112px;
+          height:4px;
+          background:#16a9e8;
+          border-radius:5px;
+          margin-top:14px;
+      }
+      .about-feature-body{
+          padding:28px 36px 34px;
+      }
+      .about-feature-body p{
+          color:#171717;
+          font-size:1.08rem;
+          line-height:1.55;
+          margin:0 0 18px 0;
+      }
+      .about-feature-body p:last-child{margin-bottom:0}
+
+      @media(max-width:900px){
+          .about-grid{grid-template-columns:1fr}
+          .about-feature-title{font-size:2.1rem}
+          .about-feature-card{min-height:auto}
+      }
+      @media(max-width:600px){
+          .about-hero{padding:28px}
+          .about-title{font-size:2.25rem}
+          .about-heading-row{gap:14px}
+          .about-icon{width:68px;height:68px;flex-basis:68px;font-size:34px}
+          .about-feature-top{padding:24px}
+          .about-feature-body{padding:24px}
+      }
     </style>
-    <div class="about-hero"><div class="about-title">About DiLytics</div><div class="about-sub">DiLytics helps organizations turn complex data into actionable insights through analytics, AI, data engineering and modern cloud platforms. Its mission is to create competitive advantage through outstanding insights using the latest developments in analytics.</div></div>
-    """,unsafe_allow_html=True)
-    c1,c2,c3=st.columns(3)
-    cards=[("Mission","Deliver outstanding insights that create competitive advantage for customers."),("Vision","Be a trusted analytics solution partner that brings immense value to customers and their analytics journeys."),("Insight Solutions","Prebuilt and customizable analytics solutions combine data models, pipelines, dashboards, reports and metrics to accelerate data-driven decisions.")]
-    for col,(h,t) in zip([c1,c2,c3],cards):
-        with col: st.markdown(f'<div class="about-card"><h3>{h}</h3><p>{t}</p></div>',unsafe_allow_html=True)
+
+    <div class="about-hero">
+      <div class="about-title">About DiLytics</div>
+      <div class="about-sub">
+        DiLytics helps organizations turn complex data into actionable insights through analytics,
+        AI, data engineering and modern cloud platforms. Its mission is to create competitive
+        advantage through outstanding insights using the latest developments in analytics.
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Mission and Vision — large feature cards.
+    st.markdown("""
+    <div class="about-grid">
+      <div class="about-feature-card">
+        <div class="about-feature-top">
+          <div class="about-heading-row">
+            <div class="about-icon">🎯</div>
+            <div>
+              <div class="about-feature-title">Mission</div>
+              <div class="about-underline"></div>
+            </div>
+          </div>
+        </div>
+        <div class="about-feature-body">
+          <p>
+            Our mission is to bring great competitive advantage to our customers through delivery
+            of outstanding insights by leveraging the latest and the greatest developments in the
+            Analytics space.
+          </p>
+        </div>
+      </div>
+
+      <div class="about-feature-card">
+        <div class="about-feature-top">
+          <div class="about-heading-row">
+            <div class="about-icon">👁️</div>
+            <div>
+              <div class="about-feature-title">Vision</div>
+              <div class="about-underline"></div>
+            </div>
+          </div>
+        </div>
+        <div class="about-feature-body">
+          <p>
+            Our vision is to be the best Analytics solution partner to our customers, one that
+            brings immense value to their Analytics endeavors. We aspire to be among the top
+            Analytics solution providers globally.
+          </p>
+        </div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Insight Solutions and Services — second row using the same card template.
+    st.markdown("""
+    <div class="about-grid">
+      <div class="about-feature-card">
+        <div class="about-feature-top">
+          <div class="about-heading-row">
+            <div class="about-icon">💡</div>
+            <div>
+              <div class="about-feature-title">Insight Solutions</div>
+              <div class="about-underline"></div>
+            </div>
+          </div>
+        </div>
+        <div class="about-feature-body">
+          <p>
+            DiLytics Insight Solutions is a suite of horizontal and industry-specific analytics
+            solutions designed to accelerate data-driven decision-making and business transformation.
+            Each solution comes with extensive prebuilt content, including data models, data pipelines,
+            dashboards, reports and metrics.
+          </p>
+          <p>
+            Validated by Microsoft and Oracle, the solutions deliver enterprise-grade reliability,
+            scalability, and performance. Their modular architecture and customization features enable
+            organizations to tailor capabilities as per their unique business processes.
+          </p>
+          <p>
+            Natural language capabilities provide intuitive access to valuable insights and foresights.
+            Flexible deployment options across on-premises, cloud, and hybrid environments provide
+            maximum adaptability, while the prebuilt foundation delivers a significant time-to-market
+            advantage, enabling deployment in weeks rather than months.
+          </p>
+        </div>
+      </div>
+
+      <div class="about-feature-card">
+        <div class="about-feature-top">
+          <div class="about-heading-row">
+            <div class="about-icon">🤝</div>
+            <div>
+              <div class="about-feature-title">Services</div>
+              <div class="about-underline"></div>
+            </div>
+          </div>
+        </div>
+        <div class="about-feature-body">
+          <p>
+            DiLytics offers a comprehensive portfolio of Data, Analytics, and AI services. As a
+            one-stop partner, DiLytics supports clients across the entire lifecycle – from strategy
+            and advisory to implementation, optimization, and ongoing support.
+          </p>
+          <p>
+            Our Think Services help organizations define strategy, roadmaps, and technology direction.
+            Build Services deliver data platforms, analytics, AI solutions, migrations and upgrades.
+            Run Services provide ongoing support to maximize the value of analytics and AI investments.
+          </p>
+          <p>
+            With expertise across modern data and AI platforms such as Microsoft, Oracle, Snowflake,
+            Alteryx, DiLytics delivers vendor-agnostic solutions tailored to business needs. Our Staff
+            Augmentation Services complement these offerings by providing experienced consultants to
+            bridge critical skill gaps.
+          </p>
+        </div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
     st.markdown("### Why Dilytics for modern analytics")
-    points=["End-to-end analytics, data engineering and AI capabilities.","Natural-language access to insights through conversational interfaces.","Modular solutions that can be customized to business processes.","Snowflake, Power BI, Tableau and other modern data-platform expertise."]
-    for p in points: st.markdown(f"✓ **{p}**")
+    points=[
+        "End-to-end analytics, data engineering and AI capabilities.",
+        "Natural-language access to insights through conversational interfaces.",
+        "Modular solutions that can be customized to business processes.",
+        "Snowflake, Power BI, Tableau and other modern data-platform expertise."
+    ]
+    for p in points:
+        st.markdown(f"✓ **{p}**")
+
     st.markdown("### Key milestones")
-    milestones=[("2011","DiLytics was founded in California to deliver enterprise analytics solutions."),("2012","Delivered a complex supply-chain planning analytics solution for a leading biopharmaceutical organization."),("2023–2024","Expanded strategic engagements and implemented DiLytics Insight Solutions for major organizations."),("2025","Delivered Sales, Finance and Planning Analytics solutions for a leading global medical-device manufacturer."),("2026","Expanded analytics delivery across nonprofit behavioral health and other data-driven organizations.")]
+    milestones=[
+        ("2011","DiLytics was founded in California to deliver enterprise analytics solutions."),
+        ("2012","Delivered a complex supply-chain planning analytics solution for a leading biopharmaceutical organization."),
+        ("2023–2024","Expanded strategic engagements and implemented DiLytics Insight Solutions for major organizations."),
+        ("2025","Delivered Sales, Finance and Planning Analytics solutions for a leading global medical-device manufacturer."),
+        ("2026","Expanded analytics delivery across nonprofit behavioral health and other data-driven organizations.")
+    ]
     for year,desc in milestones:
         st.markdown(f"**{year}**  —  {desc}")
-    if st.button("⌂ Home",use_container_width=False): _set_page("home")
+    if st.button("⌂ Home",use_container_width=False):
+        _set_page("home")
 
 
 def _open_chat():
