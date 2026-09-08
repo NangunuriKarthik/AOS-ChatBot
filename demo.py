@@ -268,21 +268,35 @@ section[data-testid="stSidebar"] .stButton > button:active {
     transform:scale(.99);
 }
 
-/* Primary New Chat */
+/* New Chat — match the same outlined control style as Reset Chat */
 section[data-testid="stSidebar"] .stButton[kind="primary"] > button {
     background:#ffffff !important;
-    border:1px solid #d9d9de !important;
+    border:1px solid #d1d5db !important;
     border-radius:9px !important;
     color:#111827 !important;
     font-weight:500 !important;
-    min-height:42px !important;
-    height:42px !important;
-    padding:0 14px !important;
-    box-shadow:0 1px 2px rgba(0,0,0,.04) !important;
+    min-height:40px !important;
+    height:40px !important;
+    padding:0 10px !important;
+    box-shadow:none !important;
 }
 section[data-testid="stSidebar"] .stButton[kind="primary"] > button:hover {
-    background:#f1f1f3 !important;
-    border:1px solid #d1d1d6 !important;
+    background:#ececef !important;
+    border:1px solid #d1d5db !important;
+}
+
+
+/* Reset Chat — same border treatment as New Chat */
+section[data-testid="stSidebar"] .st-key-sidebar_reset_chat button {
+    background:#ffffff !important;
+    border:1px solid #d1d5db !important;
+    border-radius:9px !important;
+    color:#111827 !important;
+    box-shadow:none !important;
+}
+section[data-testid="stSidebar"] .st-key-sidebar_reset_chat button:hover {
+    background:#ececef !important;
+    border:1px solid #d1d5db !important;
 }
 
 /* Section labels */
