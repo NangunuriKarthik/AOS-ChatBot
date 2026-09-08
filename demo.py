@@ -3180,10 +3180,10 @@ with st.sidebar:
             with c2:
                 is_pinned = s_id in st.session_state.pinned_sessions
                 if st.button(
-                    "★" if is_pinned else "☆",
+                    "📌" if is_pinned else "📌",
                     key=f"pin_{s_id}",
                     use_container_width=True,
-                    help="Unpin conversation" if is_pinned else "Pin conversation",
+                    help="📌 Unpin conversation" if is_pinned else "📌 Pin conversation",
                 ):
                     if is_pinned:
                         st.session_state.pinned_sessions.discard(s_id)
