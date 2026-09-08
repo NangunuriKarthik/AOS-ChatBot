@@ -3470,49 +3470,49 @@ tab_inv, tab_sales, tab_supply = st.tabs(
 with tab_inv:
     with st.expander("What can I ask about Inventory?", expanded=False):
         if st.button(
-            "💰 What is the total inventory value?",
+            "What is the total inventory value?",
             use_container_width=True,
             key="i1",
         ):
             quick_prompt = "What is the total inventory value?"
 
         if st.button(
-            "🏭 What is the inventory value by warehouse?",
+            "What is the inventory value by warehouse?",
             use_container_width=True,
             key="i2",
         ):
             quick_prompt = "What is the inventory value by warehouse?"
 
         if st.button(
-            "📦 Which products have the highest inventory value?",
+            "Which products have the highest inventory value?",
             use_container_width=True,
             key="i3",
         ):
             quick_prompt = "Which products have the highest inventory value?"
 
         if st.button(
-            "📉 How many products are out of stock?",
+            "How many products are out of stock?",
             use_container_width=True,
             key="i4",
         ):
             quick_prompt = "How many products are out of stock?"
 
         if st.button(
-            "⚠️ What is the total excess inventory value by warehouse?",
+            "What is the total excess inventory value by warehouse?",
             use_container_width=True,
             key="i5",
         ):
             quick_prompt = "What is the total excess inventory value by warehouse?"
 
         if st.button(
-            "🔄 Which products need to be reordered?",
+            "Which products need to be reordered?",
             use_container_width=True,
             key="i6",
         ):
             quick_prompt = "Which products need to be reordered?"
 
         if st.button(
-            "🏷️ What is the inventory value by product category?",
+            "What is the inventory value by product category?",
             use_container_width=True,
             key="i7",
         ):
@@ -3521,49 +3521,49 @@ with tab_inv:
 with tab_sales:
     with st.expander("What can I ask about Sales?", expanded=False):
         if st.button(
-            "💵 What is the total sales amount?",
+            "What is the total sales amount?",
             use_container_width=True,
             key="s1",
         ):
             quick_prompt = "What is the total sales amount?"
 
         if st.button(
-            "🏆 What are the top products by sales?",
+            "What are the top products by sales?",
             use_container_width=True,
             key="s2",
         ):
             quick_prompt = "What are the top products by sales?"
 
         if st.button(
-            "🌍 What are total sales by customer region?",
+            "What are total sales by customer region?",
             use_container_width=True,
             key="s3",
         ):
             quick_prompt = "What are total sales by customer region?"
 
         if st.button(
-            "📅 What are total sales by month?",
+            "What are total sales by month?",
             use_container_width=True,
             key="s4",
         ):
             quick_prompt = "What are total sales by month?"
 
         if st.button(
-            "📊 What is total sales by order channel?",
+            "What is total sales by order channel?",
             use_container_width=True,
             key="s5",
         ):
             quick_prompt = "What is total sales by order channel?"
 
         if st.button(
-            "💳 What is the average order value?",
+            "What is the average order value?",
             use_container_width=True,
             key="s6",
         ):
             quick_prompt = "What is the average order value?"
 
         if st.button(
-            "🎟️ What is the total discount?",
+            "What is the total discount?",
             use_container_width=True,
             key="s7",
         ):
