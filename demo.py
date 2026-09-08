@@ -888,9 +888,12 @@ def _login_page():
 
             st.session_state.authenticated = True
 
-            # Authentication was opened from "Chat with AI",
-            # so continue directly to the chatbot.
-            st.session_state.app_page = "chatbot"
+            # Continue to the page that requested authentication.
+            # This is important for Document AI: the uploaded spreadsheet
+            # needs the authenticated Snowpark session before write_pandas()
+            # can create the transient table used by the chatbot.
+            next_page = st.session_state.pop("post_login_page", "chatbot")
+            st.session_state.app_page = next_page
             st.rerun()
 
         except Exception as e:
@@ -2245,7 +2248,7 @@ def _top_nav():
 
             with n2:
                 if st.button("Document AI", use_container_width=True, key="top_docs"):
-                    _set_page("document_ai")
+                    _open_document_ai()
 
             with n3:
                 if st.button("About Dilytics", use_container_width=True, key="top_about"):
@@ -2332,6 +2335,16 @@ def _document_ai_page():
     with c2:
         if st.button("⌂ Home",use_container_width=True): _set_page("home")
     if analyze and uploaded:
+        # Excel/CSV uploads are persisted to Snowflake through write_pandas().
+        # Never call it with a missing Snowpark session. This can happen when
+        # Document AI is opened directly from Home before authentication.
+        if (not st.session_state.get("authenticated", False)
+                or st.session_state.get("snowpark_session") is None
+                or st.session_state.get("snowflake_conn") is None):
+            st.session_state.post_login_page = "document_ai"
+            st.session_state.app_page = "login"
+            st.rerun()
+
         try:
             with st.spinner("Analyzing document..."):
                 doc_type,doc_df,doc_text,doc_message=process_uploaded_document(uploaded)
@@ -2645,6 +2658,22 @@ def _about_page():
         st.markdown(f"**{year}**  —  {desc}")
     if st.button("⌂ Home",use_container_width=False):
         _set_page("home")
+
+
+def _open_document_ai():
+    """Open Document AI only when the Snowflake/Snowpark session is ready."""
+    authenticated = st.session_state.get("authenticated", False)
+    snowflake_session = st.session_state.get("snowpark_session")
+    snowflake_conn = st.session_state.get("snowflake_conn")
+
+    if not authenticated or snowflake_session is None or snowflake_conn is None:
+        # Remember the requested destination so a successful login returns
+        # the user to Document AI instead of unexpectedly opening the chatbot.
+        st.session_state.post_login_page = "document_ai"
+        st.session_state.app_page = "login"
+    else:
+        st.session_state.app_page = "document_ai"
+    st.rerun()
 
 
 def _open_chat():
