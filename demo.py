@@ -268,23 +268,44 @@ section[data-testid="stSidebar"] .stButton > button:active {
     transform:scale(.99);
 }
 
-/* New Chat — light blue outlined button */
-section[data-testid="stSidebar"] .stButton[kind="primary"] > button {
-    background:#f2f8ff !important;
-    border:1px solid #c7e1f8 !important;
+/* New Chat — explicit key-scoped styling so Streamlit cannot override the border */
+section[data-testid="stSidebar"] .st-key-sidebar_new_chat,
+section[data-testid="stSidebar"] .st-key-sidebar_new_chat > div,
+section[data-testid="stSidebar"] .st-key-sidebar_new_chat .stButton,
+section[data-testid="stSidebar"] .st-key-sidebar_new_chat .stButton > div {
+    width:100% !important;
+}
+
+section[data-testid="stSidebar"] .st-key-sidebar_new_chat button,
+section[data-testid="stSidebar"] .st-key-sidebar_new_chat .stButton > button {
+    width:100% !important;
+    min-height:40px !important;
+    height:40px !important;
+    padding:0 12px !important;
+    background:#f4f9ff !important;
+    background-color:#f4f9ff !important;
+    border:1.5px solid #bcd9f2 !important;
     border-radius:9px !important;
     color:#173f70 !important;
     font-weight:500 !important;
-    min-height:40px !important;
-    height:40px !important;
-    padding:0 10px !important;
-    box-shadow:0 1px 2px rgba(45, 105, 160, 0.06) !important;
-}
-section[data-testid="stSidebar"] .stButton[kind="primary"] > button:hover {
-    background:#eaf4ff !important;
-    border:1px solid #b9d9f3 !important;
+    box-shadow:0 1px 3px rgba(45,105,160,.08) !important;
+    outline:none !important;
 }
 
+section[data-testid="stSidebar"] .st-key-sidebar_new_chat button:hover,
+section[data-testid="stSidebar"] .st-key-sidebar_new_chat .stButton > button:hover {
+    background:#eaf4ff !important;
+    background-color:#eaf4ff !important;
+    border:1.5px solid #9fc9ed !important;
+}
+
+section[data-testid="stSidebar"] .st-key-sidebar_new_chat button:focus,
+section[data-testid="stSidebar"] .st-key-sidebar_new_chat button:focus-visible,
+section[data-testid="stSidebar"] .st-key-sidebar_new_chat .stButton > button:focus-visible {
+    border:1.5px solid #9fc9ed !important;
+    outline:none !important;
+    box-shadow:0 0 0 2px rgba(159,201,237,.18) !important;
+}
 
 /* Reset Chat — same border treatment as New Chat */
 section[data-testid="stSidebar"] .st-key-sidebar_reset_chat button {
