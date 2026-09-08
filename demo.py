@@ -268,21 +268,21 @@ section[data-testid="stSidebar"] .stButton > button:active {
     transform:scale(.99);
 }
 
-/* New Chat — match the same outlined control style as Reset Chat */
+/* New Chat — light blue outlined button */
 section[data-testid="stSidebar"] .stButton[kind="primary"] > button {
-    background:#ffffff !important;
-    border:1px solid #d1d5db !important;
+    background:#f2f8ff !important;
+    border:1px solid #c7e1f8 !important;
     border-radius:9px !important;
-    color:#111827 !important;
+    color:#173f70 !important;
     font-weight:500 !important;
     min-height:40px !important;
     height:40px !important;
     padding:0 10px !important;
-    box-shadow:none !important;
+    box-shadow:0 1px 2px rgba(45, 105, 160, 0.06) !important;
 }
 section[data-testid="stSidebar"] .stButton[kind="primary"] > button:hover {
-    background:#ececef !important;
-    border:1px solid #d1d5db !important;
+    background:#eaf4ff !important;
+    border:1px solid #b9d9f3 !important;
 }
 
 
