@@ -211,6 +211,37 @@ section[data-testid="stSidebar"] p {
     color:#1f2937 !important;
 }
 
+
+/* Pin Conversation button — the 📌 is INSIDE the bordered button */
+section[data-testid="stSidebar"] [class*="st-key-pin_"] button {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 1px solid #c7d2df !important;
+    border-radius: 9px !important;
+    background: #f4f8fc !important;
+    color: #173f70 !important;
+    box-shadow: none !important;
+    font-size: 17px !important;
+    line-height: 1 !important;
+}
+section[data-testid="stSidebar"] [class*="st-key-pin_"] button:hover {
+    background: #eaf4ff !important;
+    border-color: #9fc9ec !important;
+}
+section[data-testid="stSidebar"] [class*="st-key-pin_"] button p {
+    margin: 0 !important;
+    font-size: 17px !important;
+    line-height: 1 !important;
+}
+
 /* Sidebar header */
 .dly-sidebar-brand {
     display:flex;
@@ -3180,7 +3211,7 @@ with st.sidebar:
             with c2:
                 is_pinned = s_id in st.session_state.pinned_sessions
                 if st.button(
-                    "📌" if is_pinned else "📌",
+                    "📌",
                     key=f"pin_{s_id}",
                     use_container_width=True,
                     help="📌 Unpin conversation" if is_pinned else "📌 Pin conversation",
