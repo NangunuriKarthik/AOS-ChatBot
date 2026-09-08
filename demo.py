@@ -3569,6 +3569,63 @@ with tab_sales:
         ):
             quick_prompt = "What is the total discount?"
 
+with st.expander("What can I ask about Supply Chain?", expanded=False):
+    if st.button(
+        "What is the total number of purchase orders?",
+        use_container_width=True,
+        key="sc1",
+    ):
+        quick_prompt = "What is the total number of purchase orders?"
+
+    if st.button(
+        "What is the total purchase order value?",
+        use_container_width=True,
+        key="sc2",
+    ):
+        quick_prompt = "What is the total purchase order value?"
+
+    if st.button(
+        "How many shipments are there?",
+        use_container_width=True,
+        key="sc3",
+    ):
+        quick_prompt = "How many shipments are there?"
+
+    if st.button(
+        "What is the average shipment lead time?",
+        use_container_width=True,
+        key="sc4",
+    ):
+        quick_prompt = "What is the average shipment lead time?"
+
+    if st.button(
+        "How many shipments are delayed?",
+        use_container_width=True,
+        key="sc5",
+    ):
+        quick_prompt = "How many shipments are delayed?"
+
+    if st.button(
+        "Which suppliers have the highest purchase order value?",
+        use_container_width=True,
+        key="sc6",
+    ):
+        quick_prompt = "Which suppliers have the highest purchase order value?"
+
+    if st.button(
+        "What are shipments by month?",
+        use_container_width=True,
+        key="sc7",
+    ):
+        quick_prompt = "What are shipments by month?"
+
+    if st.button(
+        "What is the on-time delivery performance?",
+        use_container_width=True,
+        key="sc8",
+    ):
+        quick_prompt = "What is the on-time delivery performance?"
+
 st.markdown("---")
 
 
