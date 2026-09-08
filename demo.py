@@ -2912,7 +2912,7 @@ def _home_page():
         with st.container(key="inventory_card", width="stretch"):
             st.markdown("""
             <div class="module-card-container">
-              <h2>▦ &nbsp; Inventory Intelligence</h2>
+              <h2>Inventory Intelligence</h2>
               <p>Get real-time insights into stock levels, warehouse capacity and product performance.</p>
               <ul>
                 <li>Track inventory levels and availability</li>
@@ -2935,7 +2935,7 @@ def _home_page():
         with st.container(key="sales_card", width="stretch"):
             st.markdown("""
             <div class="module-card-container">
-              <h2>▥ &nbsp; Sales Intelligence</h2>
+              <h2>Sales Intelligence</h2>
               <p>Uncover sales trends, customer insights and revenue opportunities across products, regions and channels.</p>
               <ul>
                 <li>Analyze total sales and revenue</li>
@@ -2958,7 +2958,7 @@ def _home_page():
         with st.container(key="supply_chain_card", width="stretch"):
             st.markdown("""
             <div class="module-card-container">
-              <h2>🚚 &nbsp; Supply Chain Intelligence</h2>
+              <h2>Supply Chain Intelligence</h2>
               <p>Monitor supply chain performance, fulfillment, logistics and operational trends across your network.</p>
               <ul>
                 <li>Analyze supply chain and fulfillment performance</li>
@@ -3464,11 +3464,11 @@ st.markdown("### Explore your data")
 st.caption("Choose a question below or type your own question in the chat.")
 
 tab_inv, tab_sales, tab_supply = st.tabs(
-    ["📦 Inventory Intelligence", "💰 Sales Intelligence", "🚚 Supply Chain Intelligence"]
+    ["Inventory Intelligence", "Sales Intelligence", "Supply Chain Intelligence"]
 )
 
 with tab_inv:
-    with st.expander("💡 What can I ask about Inventory?", expanded=False):
+    with st.expander("What can I ask about Inventory?", expanded=False):
         if st.button(
             "💰 What is the total inventory value?",
             use_container_width=True,
@@ -3519,7 +3519,7 @@ with tab_inv:
             quick_prompt = "What is the inventory value by product category?"
 
 with tab_sales:
-    with st.expander("💡 What can I ask about Sales?", expanded=False):
+    with st.expander("What can I ask about Sales?", expanded=False):
         if st.button(
             "💵 What is the total sales amount?",
             use_container_width=True,
