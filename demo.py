@@ -1175,9 +1175,14 @@ def ai_complete_document_question(question: str) -> str:
 
     model_literal = _snowflake_sql_literal(DOCUMENT_AI_MODEL)
     question_literal = _snowflake_sql_literal(
-        "Answer the user's question using only the uploaded document. "
-        "Be precise and concise. If the document does not contain enough information "
-        "to answer, say so instead of inventing information. "
+        "You are a document-grounded analyst. Answer the user question using ONLY the uploaded document. "
+        "Do not use general knowledge, assumptions, or information not present in the document. "
+        "Read the relevant paragraphs, headings, lists, and tables before answering. "
+        "Preserve exact names, numbers, dates, percentages, and wording where they matter. "
+        "If the answer is not explicitly supported by the document, say: 'The document does not provide enough information to answer this.' "
+        "If multiple passages support the answer, reconcile them and state the relevant section/page when available. "
+        "For calculations, show the calculation briefly and use only document values. "
+        "Never invent a missing value. Be concise but complete. "
         "User question: " + question
     )
     # TO_FILE expects the stage reference as a string such as
@@ -1351,124 +1356,255 @@ def _sample_values(df: pd.DataFrame, original: str, limit: int = 5):
     return values
 
 
-def build_uploaded_semantic_model(df: pd.DataFrame, table_name: str) -> str:
-    """Build a semantic model directly from the uploaded spreadsheet schema.
+def _looks_like_identifier(original_name: str, series: pd.Series) -> bool:
+    """Conservatively identify ID/code columns so they are not treated as sums."""
+    name = re.sub(r"[_\-]+", " ", str(original_name)).strip().lower()
+    id_words = (" id", "_id", " identifier", " code", " number", " no")
+    if any(token in name for token in id_words) or name.endswith(("id", "code", "number", "no")):
+        return True
+    try:
+        non_null = series.dropna()
+        if len(non_null) and pd.api.types.is_numeric_dtype(series.dtype):
+            unique_ratio = non_null.nunique(dropna=True) / len(non_null)
+            return unique_ratio >= 0.98 and len(non_null) >= 20
+    except Exception:
+        pass
+    return False
 
-    The model is sent inline to the Cortex Analyst REST API. No COMPLETE call
-    and no hard-coded question-to-SQL mapping are used.
+
+def _column_profile(df: pd.DataFrame, original: str) -> Dict[str, Any]:
+    """Return compact, deterministic metadata used to make Analyst's model precise."""
+    series = df[original]
+    non_null = series.dropna()
+    profile: Dict[str, Any] = {
+        "rows": int(len(series)),
+        "non_null": int(non_null.shape[0]),
+        "nulls": int(series.isna().sum()),
+        "unique": int(non_null.nunique(dropna=True)),
+        "samples": _sample_values(df, original, 8),
+    }
+    try:
+        if pd.api.types.is_numeric_dtype(series.dtype) and not pd.api.types.is_bool_dtype(series.dtype):
+            profile["min"] = float(non_null.min()) if len(non_null) else None
+            profile["max"] = float(non_null.max()) if len(non_null) else None
+            profile["avg"] = float(non_null.mean()) if len(non_null) else None
+    except Exception:
+        pass
+    return profile
+
+
+def _verified_queries_for_uploaded_model(
+    mapping: Dict[str, str], df: pd.DataFrame, table_name: str
+) -> List[Dict[str, Any]]:
+    """Create a small set of deterministic verified examples for the uploaded table."""
+    queries: List[Dict[str, Any]] = [
+        {
+            "name": "uploaded_row_count",
+            "question": "How many rows are in the uploaded data?",
+            "sql": f'SELECT SUM(ROW_INDICATOR) AS ROW_COUNT FROM "{table_name}"',
+        }
+    ]
+
+    for original, safe in mapping.items():
+        series = df[original]
+        if pd.api.types.is_datetime64_any_dtype(series.dtype):
+            queries.append({
+                "name": f"latest_{safe.lower()}",
+                "question": f"What is the latest {original}?",
+                "sql": f'SELECT MAX("{safe}") AS LATEST_{safe} FROM "{table_name}"',
+            })
+        elif pd.api.types.is_numeric_dtype(series.dtype) and not _looks_like_identifier(original, series):
+            queries.append({
+                "name": f"total_{safe.lower()}",
+                "question": f"What is the total {original}?",
+                "sql": f'SELECT SUM("{safe}") AS TOTAL_{safe} FROM "{table_name}"',
+            })
+            queries.append({
+                "name": f"average_{safe.lower()}",
+                "question": f"What is the average {original}?",
+                "sql": f'SELECT AVG("{safe}") AS AVERAGE_{safe} FROM "{table_name}"',
+            })
+        if len(queries) >= 10:
+            break
+
+    return queries[:10]
+
+
+def build_uploaded_semantic_model(df: pd.DataFrame, table_name: str) -> str:
+    """Build a high-context Cortex Analyst semantic model for the uploaded spreadsheet.
+
+    Accuracy improvements:
+      * representative sample values for literal filters
+      * domain-aware synonyms from the real headers
+      * measures with explicit default aggregation
+      * identifier detection to avoid summing IDs
+      * richer column descriptions and profiling metadata
+      * deterministic verified examples for common aggregations
     """
     mapping = _safe_column_names(df)
-
-    dimensions = []
-    time_dimensions = []
-    facts = []
+    dimensions: List[Dict[str, Any]] = []
+    time_dimensions: List[Dict[str, Any]] = []
+    facts: List[Dict[str, Any]] = []
+    measures: List[Dict[str, Any]] = []
 
     for original, safe in mapping.items():
         dtype = df[original].dtype
         sf_type = _snowflake_type_for_pandas(dtype)
         synonyms = _column_synonyms(original)
-        desc = f"Uploaded spreadsheet column '{original}'."
+        profile = _column_profile(df, original)
+        original_lower = str(original).lower()
+        identifier = _looks_like_identifier(original, df[original])
 
-        # Close-out date is commonly the strongest completion indicator in
-        # project workbooks. Only add this interpretation when that real column exists.
-        original_lower = original.lower()
+        desc = (
+            f"Uploaded spreadsheet column '{original}'. "
+            f"Contains {profile['unique']:,} distinct non-null values and "
+            f"{profile['nulls']:,} null values."
+        )
+        if identifier:
+            desc += " This appears to be an identifier/code; do not sum it."
+        if "sales" in original_lower or "revenue" in original_lower or "amount" in original_lower or "price" in original_lower:
+            desc += " This column may represent a monetary/business amount; use its actual values and do not invent currency."
+        if "quantity" in original_lower or "qty" in original_lower:
+            desc += " This column represents a quantity/count at row level."
         if "close out" in original_lower or "closeout" in original_lower:
-            desc = (
-                f"Uploaded spreadsheet column '{original}'. A non-null value indicates "
-                "that the project received close-out approval and can be used as a "
-                "completion indicator."
-            )
+            desc += " A non-null value indicates close-out/completion when the user asks about completed projects."
 
-        entry = {
-            "name": safe,
-            "description": desc,
-            "expr": safe,
-            "data_type": sf_type,
-            "unique": False,
-        }
-        if synonyms:
-            entry["synonyms"] = synonyms
         if pd.api.types.is_datetime64_any_dtype(dtype):
+            entry = {
+                "name": safe,
+                "description": desc,
+                "expr": safe,
+                "data_type": sf_type,
+                "unique": False,
+            }
+            if synonyms:
+                entry["synonyms"] = synonyms
+            if profile["samples"]:
+                entry["sample_values"] = profile["samples"]
             time_dimensions.append(entry)
-        else:
+            continue
+
+        # Numeric identifiers are dimensions; business quantities/amounts are facts/measures.
+        if identifier or not pd.api.types.is_numeric_dtype(dtype):
+            entry = {
+                "name": safe,
+                "description": desc,
+                "expr": safe,
+                "data_type": sf_type,
+                "unique": False,
+            }
+            if synonyms:
+                entry["synonyms"] = synonyms
+            if profile["samples"]:
+                entry["sample_values"] = profile["samples"]
+            # Low-cardinality text fields benefit from explicit literal examples.
+            if profile["unique"] <= 15 and profile["unique"] > 0 and len(profile["samples"]) >= min(profile["unique"], 8):
+                entry["is_enum"] = True
             dimensions.append(entry)
 
-        if pd.api.types.is_numeric_dtype(dtype):
-            facts.append({
+        if pd.api.types.is_numeric_dtype(dtype) and not identifier and not pd.api.types.is_bool_dtype(dtype):
+            fact = {
                 "name": safe,
-                "description": f"Numeric value from uploaded column '{original}'.",
+                "description": desc,
                 "expr": safe,
                 "data_type": "NUMBER",
+            }
+            if synonyms:
+                fact["synonyms"] = synonyms
+            if profile["samples"]:
+                fact["sample_values"] = profile["samples"]
+            facts.append(fact)
+
+            # Use SUM as the default only for additive business values. IDs are excluded above.
+            measure_name = f"TOTAL_{safe}"
+            measure_synonyms = [
+                f"total {str(original).lower()}",
+                f"sum of {str(original).lower()}",
+            ]
+            measures.append({
+                "name": measure_name,
+                "synonyms": measure_synonyms,
+                "description": f"Total/sum of uploaded column '{original}'.",
+                "expr": safe,
+                "data_type": "NUMBER",
+                "default_aggregation": "sum",
             })
 
-    # A row indicator gives Analyst an explicit way to calculate row/project
-    # counts without requiring any hard-coded question mapping.
     facts.append({
         "name": "ROW_INDICATOR",
-        "description": "One numeric indicator per uploaded spreadsheet row. SUM this fact to count rows/projects.",
+        "description": "Exactly 1 for every uploaded spreadsheet row. SUM this fact to count rows/records.",
         "expr": "1",
         "data_type": "NUMBER",
     })
+    measures.insert(0, {
+        "name": "ROW_COUNT",
+        "synonyms": ["row count", "record count", "number of rows", "number of records"],
+        "description": "Count of uploaded spreadsheet rows. Always use SUM(ROW_INDICATOR) for row count.",
+        "expr": "ROW_INDICATOR",
+        "data_type": "NUMBER",
+        "default_aggregation": "sum",
+    })
 
-    # Add a semantic completion flag only when a real close-out column exists.
     closeout_safe = None
     for original, safe in mapping.items():
-        low = original.lower()
+        low = str(original).lower()
         if "close out" in low or "closeout" in low:
             closeout_safe = safe
             break
-
     if closeout_safe:
         dimensions.append({
             "name": "IS_COMPLETED",
-            "description": "True when the close-out approval date is not null; this represents a completed project in this uploaded workbook.",
+            "description": "True when the close-out approval date is not null. Use this only for completion questions.",
             "expr": f"{closeout_safe} IS NOT NULL",
             "data_type": "BOOLEAN",
             "unique": False,
             "synonyms": ["completed", "project completed", "completion status"],
+            "is_enum": True,
+            "sample_values": ["TRUE", "FALSE"],
         })
 
-    table_definition = {
+    table_definition: Dict[str, Any] = {
         "name": "UPLOADED_DATA",
-        "description": "One logical table containing the complete uploaded spreadsheet.",
-        "base_table": {
-            "database": DATABASE,
-            "schema": SCHEMA,
-            "table": table_name,
-        },
+        "description": (
+            "Complete uploaded spreadsheet dataset. One logical row represents one source row. "
+            "Use only this table for document questions."
+        ),
+        "base_table": {"database": DATABASE, "schema": SCHEMA, "table": table_name},
         "dimensions": dimensions,
         "facts": facts,
+        "measures": measures,
     }
     if time_dimensions:
         table_definition["time_dimensions"] = time_dimensions
 
     model = {
         "name": "UPLOADED_DOCUMENT_ANALYSIS",
-        "description": "Semantic model generated dynamically from one uploaded spreadsheet. Use only this uploaded dataset.",
+        "description": "High-context semantic model generated from the actual uploaded spreadsheet. No external business data is allowed.",
         "tables": [table_definition],
+        "verified_queries": _verified_queries_for_uploaded_model(mapping, df, table_name),
         "module_custom_instructions": {
             "sql_generation": (
-                "Use only the uploaded_data logical table. Query the complete underlying table. "
-                "Use ROW_INDICATOR for total row/project counts when appropriate. "
-                "For questions asking for the count of an ID column, count non-null values of that ID; "
-                "if the ID is explicitly a unique project identifier, COUNT(DISTINCT ID) is appropriate. "
-                "If IS_COMPLETED exists, use it when the user asks about completed projects. "
-                "Do not invent columns or business definitions."
+                "Use ONLY UPLOADED_DATA and only columns defined in this semantic model. "
+                "Never invent a column, value, date, currency, status, or business definition. "
+                "For row/record counts use ROW_COUNT or SUM(ROW_INDICATOR). "
+                "Never SUM/AVG identifier columns such as IDs, codes, account numbers, project numbers, or order numbers. "
+                "For numeric business amounts use the corresponding TOTAL_* measure or SUM of the underlying numeric fact. "
+                "For average questions use AVG of the underlying numeric fact, not SUM divided by an unrelated count. "
+                "For distinct identifier questions use COUNT(DISTINCT identifier). "
+                "For completion questions use IS_COMPLETED only when it exists and is based on the real close-out column. "
+                "For date filters use the actual time dimension and correct calendar boundaries. "
+                "For literal filters prefer the exact values shown in sample_values and match the underlying data case-insensitively when appropriate. "
+                "If the question is ambiguous or the requested concept is not present, do not guess; return a clarification/no-answer response instead."
             ),
             "question_categorization": (
-                "Classify questions only from the uploaded table's actual columns and values. "
-                "Do not use the Inventory or Sales semantic models for this document question."
+                "First map the user's wording to the actual uploaded columns using descriptions, synonyms, and sample values. "
+                "Then choose the smallest correct set of dimensions/measures needed to answer the question. "
+                "Do not use any Inventory, Sales, or Supply Chain semantic model for an Uploaded Document question."
             ),
         },
     }
 
-    return yaml.safe_dump(
-        model,
-        sort_keys=False,
-        allow_unicode=True,
-        default_flow_style=False,
-    )
-
+    return yaml.safe_dump(model, sort_keys=False, allow_unicode=True, default_flow_style=False)
 
 def _drop_uploaded_table():
     table_name = st.session_state.get("uploaded_document_table")
@@ -1485,8 +1621,33 @@ def _drop_uploaded_table():
     st.session_state.uploaded_document_stage_file = None
 
 
+def _choose_best_excel_sheet(excel_file) -> str:
+    """Choose the most likely raw-data worksheet instead of blindly using sheet 1."""
+    candidates = []
+    for sheet in excel_file.sheet_names:
+        try:
+            sample = pd.read_excel(excel_file, sheet_name=sheet, nrows=30)
+        except Exception:
+            continue
+        if sample.empty:
+            continue
+        non_empty_cols = int(sum(not str(c).lower().startswith("unnamed") for c in sample.columns))
+        rows = int(len(sample))
+        cols = int(len(sample.columns))
+        name = str(sheet).lower()
+        penalty = 0
+        if any(word in name for word in ("cover", "readme", "instruction", "dashboard", "summary", "pivot", "chart")):
+            penalty += 25
+        score = min(rows, 1000) * 0.08 + non_empty_cols * 3 + cols * 0.5 - penalty
+        candidates.append((score, sheet, rows, cols))
+    if not candidates:
+        raise ValueError("The Excel workbook does not contain a readable data worksheet.")
+    candidates.sort(reverse=True)
+    return candidates[0][1]
+
+
 def process_uploaded_document(uploaded_file):
-    """Read CSV/XLSX/XLS/PDF/DOCX and return display data/text."""
+    """Read CSV/XLSX/XLS/PDF/DOCX with safer worksheet and document extraction."""
     name = uploaded_file.name
     extension = name.rsplit(".", 1)[-1].lower()
 
@@ -1494,19 +1655,23 @@ def process_uploaded_document(uploaded_file):
         uploaded_file.seek(0)
         df = pd.read_csv(uploaded_file)
         df = _normalize_uploaded_dataframe(df)
-        return "table", df, "", f"CSV file loaded with {len(df):,} rows."
+        if df.empty:
+            raise ValueError("The CSV file contains no data rows.")
+        return "table", df, "", f"CSV file loaded with {len(df):,} rows and {len(df.columns):,} columns."
 
     if extension in {"xlsx", "xls"}:
         uploaded_file.seek(0)
         excel_file = pd.ExcelFile(uploaded_file)
-        sheet_name = excel_file.sheet_names[0]
+        sheet_name = _choose_best_excel_sheet(excel_file)
         df = pd.read_excel(excel_file, sheet_name=sheet_name)
         df = _normalize_uploaded_dataframe(df)
+        if df.empty:
+            raise ValueError(f"Excel worksheet '{sheet_name}' contains no data rows.")
         return (
             "table",
             df,
             "",
-            f"Excel file loaded from sheet '{sheet_name}' with {len(df):,} rows.",
+            f"Excel workbook analyzed using the most likely data worksheet '{sheet_name}' with {len(df):,} rows and {len(df.columns):,} columns. Other worksheets were not mixed into the model to avoid cross-sheet ambiguity.",
         )
 
     if extension == "pdf":
@@ -1518,20 +1683,19 @@ def process_uploaded_document(uploaded_file):
         uploaded_file.seek(0)
         reader = PdfReader(uploaded_file)
         pages = []
-        for page in reader.pages:
-            pages.append(page.extract_text() or "")
+        for page_number, page in enumerate(reader.pages, start=1):
+            page_text = page.extract_text() or ""
+            if page_text.strip():
+                pages.append(f"[PAGE {page_number}]\n{page_text.strip()}")
         full_text = "\n\n".join(pages).strip()
-        return "text", None, full_text, f"PDF analyzed successfully ({len(reader.pages)} pages)."
+        return "text", None, full_text, f"PDF analyzed successfully ({len(reader.pages)} pages; page markers preserved for grounded answers)."
 
     if extension == "docx":
-        # DOCX is a ZIP package containing XML. Parse it with Python's standard
-        # library so the app does not require the optional python-docx package.
         import zipfile
         import xml.etree.ElementTree as ET
 
         uploaded_file.seek(0)
         docx_bytes = uploaded_file.read()
-
         try:
             with zipfile.ZipFile(io.BytesIO(docx_bytes)) as zf:
                 xml_bytes = zf.read("word/document.xml")
@@ -1551,9 +1715,9 @@ def process_uploaded_document(uploaded_file):
             if text:
                 paragraphs.append(text)
 
-        # Preserve Word tables in a simple row/column text representation.
         table_parts = []
-        for table in root.findall(".//w:tbl", ns):
+        for table_number, table in enumerate(root.findall(".//w:tbl", ns), start=1):
+            table_parts.append(f"[TABLE {table_number}]")
             for row in table.findall("./w:tr", ns):
                 cells = []
                 for cell in row.findall("./w:tc", ns):
@@ -1563,10 +1727,9 @@ def process_uploaded_document(uploaded_file):
                     table_parts.append(" | ".join(cells))
 
         full_text = "\n".join(paragraphs + table_parts).strip()
-        return "text", None, full_text, "DOCX document analyzed successfully."
+        return "text", None, full_text, "DOCX document extracted with paragraph and table structure preserved."
 
     raise ValueError("Unsupported document type.")
-
 
 def prepare_uploaded_table(df: pd.DataFrame) -> str:
     """Create a transient table so Cortex Analyst's REST session can see it."""
@@ -1611,8 +1774,18 @@ def prepare_uploaded_table(df: pd.DataFrame) -> str:
     return semantic_model
 
 
+def _validate_uploaded_result(question: str, result_df: pd.DataFrame) -> Optional[str]:
+    """Return a warning when a result looks suspicious, without rejecting valid zero-row answers."""
+    if result_df is None:
+        return "The query returned no dataframe."
+    q = question.lower()
+    if result_df.empty and not any(word in q for word in ("no rows", "which", "list", "show", "find", "filter")):
+        return "The query returned no rows; verify that the requested filter/value exists in the uploaded data."
+    return None
+
+
 def answer_uploaded_table_question(question: str, df: pd.DataFrame):
-    """Use Cortex Analyst to generate SQL against the complete uploaded table."""
+    """Generate, validate, retry, and execute Cortex Analyst SQL for uploaded data."""
     if df is None or df.empty:
         raise ValueError("The uploaded spreadsheet has no usable rows.")
 
@@ -1621,35 +1794,56 @@ def answer_uploaded_table_question(question: str, df: pd.DataFrame):
 
     table_name = st.session_state.uploaded_document_table
     semantic_model = st.session_state.uploaded_document_semantic_model
-
     if not table_name or not semantic_model:
         raise RuntimeError("The uploaded document semantic model was not created.")
 
-    analyst_json = call_cortex_analyst_with_semantic_model(
-        question,
-        semantic_model,
+    last_error = None
+    last_result = None
+    for attempt in range(1, 3):
+        prompt = question
+        if last_error:
+            prompt = (
+                f"Original user question: {question}\n\n"
+                "The previous SQL attempt failed validation/execution. Correct it using only the uploaded semantic model.\n"
+                f"Previous SQL: {last_result.get('sql') if last_result else 'unavailable'}\n"
+                f"Failure details: {last_error}\n"
+                "Do not invent columns or values. Return the corrected SQL only through the normal Analyst response."
+            )
+
+        analyst_json = call_cortex_analyst_with_semantic_model(prompt, semantic_model)
+        result = extract_analyst_response(analyst_json)
+        last_result = result
+
+        if result.get("warnings"):
+            warning_text = " ".join(
+                str(w.get("message", w)) if isinstance(w, dict) else str(w)
+                for w in result["warnings"]
+            )
+            if warning_text:
+                st.warning(warning_text)
+
+        if not result.get("sql"):
+            last_error = result.get("text") or "Cortex Analyst did not generate SQL."
+            continue
+
+        try:
+            sql_query = _clean_generated_sql(result["sql"])
+            # Only execute the generated read-only SELECT/WITH statement.
+            result_df = session.sql(sql_query).to_pandas()
+            sanity_warning = _validate_uploaded_result(question, result_df)
+            if sanity_warning and attempt == 1:
+                last_error = sanity_warning
+                continue
+            if sanity_warning:
+                st.warning(sanity_warning)
+            return result_df, sql_query, result
+        except Exception as exc:
+            last_error = str(exc)
+
+    raise RuntimeError(
+        "I could not produce a validated answer from the uploaded dataset after two attempts. "
+        f"Last issue: {last_error}"
     )
-    result = extract_analyst_response(analyst_json)
-
-    if result.get("warnings"):
-        warning_text = " ".join(
-            str(w.get("message", w)) if isinstance(w, dict) else str(w)
-            for w in result["warnings"]
-        )
-        if warning_text:
-            st.warning(warning_text)
-
-    if not result.get("sql"):
-        raise RuntimeError(
-            result.get("text")
-            or "Cortex Analyst could not generate SQL for the uploaded document question."
-        )
-
-    sql_query = _clean_generated_sql(result["sql"])
-    result_df = session.sql(sql_query).to_pandas()
-
-    return result_df, sql_query, result
-
 
 def _split_document_into_chunks(document_text: str) -> List[str]:
     """Split extracted Word text into useful paragraph/table chunks."""
@@ -1662,97 +1856,84 @@ def _split_document_into_chunks(document_text: str) -> List[str]:
 
 
 def _word_question_answer(question: str, document_text: str) -> str:
-    """Answer Word-document questions without Cortex COMPLETE/AI_COMPLETE.
-
-    This is an extractive, trial-safe fallback: it ranks paragraphs/table rows
-    by overlap with the question and returns the most relevant document content.
-    It does not invent information and therefore works without an LLM entitlement.
-    """
+    """Deterministic fallback for DOCX when Snowflake document AI is unavailable."""
     chunks = _split_document_into_chunks(document_text)
     if not chunks:
         raise ValueError("No readable text was extracted from the Word document.")
 
     stop_words = {
-        "what", "is", "are", "the", "a", "an", "of", "for", "to",
-        "in", "on", "and", "or", "with", "from", "this", "that",
-        "which", "who", "how", "why", "does", "do", "can", "please",
-        "tell", "me", "about", "give", "explain", "purpose",
+        "what", "is", "are", "the", "a", "an", "of", "for", "to", "in", "on",
+        "and", "or", "with", "from", "this", "that", "which", "who", "how",
+        "why", "does", "do", "can", "please", "tell", "me", "about", "give",
+        "explain", "show", "document", "according",
     }
     question_words = [
         w.lower() for w in re.findall(r"[A-Za-z0-9_]+", question)
         if w.lower() not in stop_words and len(w) > 2
     ]
-
-    # Also recognize common phrase variants so questions such as
-    # "What is the purpose of PII?" find a paragraph headed "Purpose".
     query_lower = question.lower()
     phrase_terms = []
-    if "purpose" in query_lower:
-        phrase_terms.extend(["purpose", "objective", "goal", "intended"])
-    if "pii" in query_lower:
-        phrase_terms.extend(["pii", "personally identifiable information"])
-    if "handling" in query_lower:
-        phrase_terms.extend(["handling", "protect", "protection", "process"])
-    if "approach" in query_lower or "approaches" in query_lower:
-        phrase_terms.extend(["approach", "approaches", "method"])
+    for key, variants in {
+        "purpose": ["purpose", "objective", "goal", "intended"],
+        "pii": ["pii", "personally identifiable information"],
+        "handling": ["handling", "protect", "protection", "process", "processed"],
+        "approach": ["approach", "approaches", "method", "methodology"],
+        "security": ["security", "secure", "safeguard", "protection"],
+        "retention": ["retention", "retain", "stored", "storage"],
+    }.items():
+        if key in query_lower:
+            phrase_terms.extend(variants)
 
     terms = list(dict.fromkeys(question_words + phrase_terms))
     scored = []
     for idx, chunk in enumerate(chunks):
         low = chunk.lower()
-        score = 0
-        matched = 0
-        for term in terms:
-            if term in low:
-                matched += 1
-                score += 2 if " " in term else 1
-        # Prefer shorter focused passages when relevance is similar.
-        if matched:
-            score += min(len(terms), matched)
-            score += 1 if len(chunk) < 500 else 0
-            scored.append((score, matched, -len(chunk), idx, chunk))
+        matched_terms = [term for term in terms if term in low]
+        if matched_terms:
+            score = sum(2 if " " in term else 1 for term in matched_terms)
+            score += min(5, len(matched_terms))
+            score += 1 if len(chunk) < 700 else 0
+            scored.append((score, len(matched_terms), -len(chunk), idx, chunk))
 
     if not scored:
-        # Safe fallback: show the beginning of the document rather than inventing.
-        preview = "\n\n".join(chunks[:3])
         return (
-            "I could not find a passage in the Word document that directly matches "
-            "your question. Here is the beginning of the extracted document content "
-            "so you can refine the question:\n\n" + preview
+            "I could not find a directly relevant passage in the uploaded Word document. "
+            "Please rephrase the question using a term, heading, or value that appears in the document."
         )
 
     scored.sort(reverse=True)
     selected = []
     seen = set()
-    for _, _, _, idx, chunk in scored[:5]:
-        # Include nearby context when available.
+    for _, _, _, idx, _ in scored[:5]:
         for pos in (idx - 1, idx, idx + 1):
             if 0 <= pos < len(chunks) and pos not in seen:
                 seen.add(pos)
                 selected.append(chunks[pos])
-        if len(selected) >= 7:
+        if len(selected) >= 8:
             break
 
-    return (
-        "Based on the uploaded Word document, the most relevant content is:\n\n"
-        + "\n\n".join(selected[:7])
-    )
+    return "Based on the most relevant extracted passages from the Word document:\n\n" + "\n\n".join(selected[:8])
 
 
 def answer_uploaded_text_question(question: str, document_text: str):
-    """Answer Word questions without changing the working Excel/CSV path.
-
-    DOCX uses local extractive search because AI_COMPLETE/COMPLETE is blocked on
-    the current Snowflake trial account. PDF keeps the existing AI_COMPLETE path.
-    """
+    """Answer PDF/DOCX questions with grounded document AI, then safe local fallback."""
     if not document_text.strip():
         raise ValueError("No readable text was extracted from the uploaded document.")
 
-    if st.session_state.get("uploaded_document_name", "").lower().endswith(".docx"):
-        return _word_question_answer(question, document_text)
-
-    return ai_complete_document_question(question)
-
+    try:
+        # AI_COMPLETE is preferred because it can reason over the staged original file.
+        # The prompt is deliberately strict so the answer cannot silently use outside knowledge.
+        return ai_complete_document_question(question)
+    except Exception as ai_error:
+        # Keep the application usable in accounts where document AI entitlement/model
+        # access is unavailable. DOCX then falls back to deterministic extraction.
+        if st.session_state.get("uploaded_document_name", "").lower().endswith(".docx"):
+            fallback = _word_question_answer(question, document_text)
+            return (
+                fallback
+                + "\n\n*Document AI model access was unavailable, so this answer uses grounded local document extraction.*"
+            )
+        raise ai_error
 
 def render_uploaded_document_preview():
     """Display the analyzed document without interfering with the original UI."""
@@ -2356,7 +2537,10 @@ def _document_ai_page():
                 st.session_state.uploaded_document=uploaded.name
                 st.session_state.uploaded_document_table=None
                 st.session_state.uploaded_document_semantic_model=None
-                if doc_type=="table": prepare_uploaded_table(doc_df)
+                if doc_type=="table":
+                    prepare_uploaded_table(doc_df)
+                elif doc_type=="text":
+                    _upload_document_to_stage(uploaded)
 
             # Preserve the upload as a chat event when Document AI is opened
             # from the top navigation. The chatbot renders this pending event
@@ -3593,8 +3777,7 @@ with st.sidebar:
                 if doc_type == "table":
                     prepare_uploaded_table(doc_df)
                 elif doc_type == "text":
-                    if uploaded_doc.name.lower().endswith(".pdf"):
-                        _upload_document_to_stage(uploaded_doc)
+                    _upload_document_to_stage(uploaded_doc)
 
             st.session_state.pending_document_chat_event = {
                 "role": "assistant",
