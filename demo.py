@@ -2124,7 +2124,11 @@ def _module_page(module: str):
     st.markdown("### Start exploring")
     a,b=st.columns(2)
     with a:
-        if st.button(f"💬 Chat with {title}",use_container_width=True,type="primary"): _set_page("chatbot")
+        if st.button(f"💬 Chat with {title}",use_container_width=True,type="primary"):
+            # Use the same authentication gate as the Home-page "Chat with AI"
+            # buttons.  Directly routing to the chatbot bypassed the login
+            # page, which left the chatbot without a Snowpark/Snowflake session.
+            _open_chat()
     with b:
         if st.button("⌂  Back to Home",use_container_width=True): _set_page("home")
 
@@ -2191,8 +2195,16 @@ def _about_page():
 
 
 def _open_chat():
-    """Open AI chat only after the authentication gate has been satisfied."""
-    if not st.session_state.get("authenticated", False):
+    """Open AI chat only when a valid authenticated Snowflake session exists."""
+    authenticated = st.session_state.get("authenticated", False)
+    snowflake_session = st.session_state.get("snowpark_session")
+    snowflake_conn = st.session_state.get("snowflake_conn")
+
+    # Module pages can be opened without signing in.  Never send an
+    # unauthenticated user directly to the chatbot because the chatbot
+    # requires the Snowpark/Snowflake session created by the login flow.
+    # Also handle a stale authenticated flag with a missing session safely.
+    if not authenticated or snowflake_session is None or snowflake_conn is None:
         st.session_state.app_page = "login"
     else:
         st.session_state.app_page = "chatbot"
