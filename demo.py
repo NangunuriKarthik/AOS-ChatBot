@@ -1690,12 +1690,35 @@ def _top_nav():
          one compact right-side group. No large empty horizontal gaps.
          ================================================================ */
 
+      /* Keep navigation anchored to the header itself instead of relying
+         on Streamlit's percentage-based column sizing. This prevents the
+         buttons from drifting into the center when the browser is zoomed. */
+      .st-key-dly_main_header {
+          position: relative !important;
+          overflow: visible !important;
+      }
+
       .st-key-dly_main_header [data-testid="column"]:last-child {
+          position: absolute !important;
+          top: 14px !important;
+          right: 58px !important;
+          width: max-content !important;
+          max-width: calc(100% - 330px) !important;
           justify-content: flex-end !important;
+          flex: 0 0 auto !important;
+          z-index: 25 !important;
       }
 
       .st-key-dly_main_header [data-testid="column"]:last-child > div {
-          width: 100% !important;
+          width: max-content !important;
+          max-width: 100% !important;
+          margin-left: auto !important;
+      }
+
+      .st-key-dly_main_header [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] {
+          width: max-content !important;
+          max-width: 100% !important;
+          flex-wrap: nowrap !important;
       }
 
       .st-key-top_home,
@@ -1871,9 +1894,56 @@ def _top_nav():
       }
 
       /* Responsive fallback. */
+      @media (max-width: 1250px) {
+          .st-key-dly_main_header {
+              padding: 10px 24px !important;
+          }
+
+          .st-key-dly_main_header [data-testid="column"]:last-child {
+              right: 24px !important;
+              max-width: calc(100% - 270px) !important;
+          }
+
+          .st-key-top_home [data-testid="stButton"] > button {
+              width: 112px !important;
+          }
+
+          .st-key-top_docs [data-testid="stButton"] > button {
+              width: 145px !important;
+          }
+
+          .st-key-top_about [data-testid="stButton"] > button {
+              width: 150px !important;
+          }
+
+          .st-key-top_home [data-testid="stButton"] > button,
+          .st-key-top_docs [data-testid="stButton"] > button,
+          .st-key-top_about [data-testid="stButton"] > button {
+              height: 48px !important;
+              min-height: 48px !important;
+              padding: 0 10px !important;
+              font-size: .80rem !important;
+              font-weight: 800 !important;
+          }
+
+          .st-key-top_home [data-testid="stButton"] > button::before,
+          .st-key-top_docs [data-testid="stButton"] > button::before,
+          .st-key-top_about [data-testid="stButton"] > button::before {
+              width: 26px;
+              height: 26px;
+              flex-basis: 26px;
+              margin-right: 7px;
+          }
+      }
+
       @media (max-width: 1050px) {
           .st-key-dly_main_header {
               padding: 10px 18px !important;
+          }
+
+          .st-key-dly_main_header [data-testid="column"]:last-child {
+              right: 18px !important;
+              max-width: calc(100% - 210px) !important;
           }
 
           .dly-reference-logo {
@@ -1916,6 +1986,13 @@ def _top_nav():
       @media (max-width: 700px) {
           .st-key-dly_main_header {
               padding: 8px 10px !important;
+              min-height: 52px !important;
+          }
+
+          .st-key-dly_main_header [data-testid="column"]:last-child {
+              top: 8px !important;
+              right: 10px !important;
+              max-width: calc(100% - 145px) !important;
           }
 
           .dly-reference-logo {
