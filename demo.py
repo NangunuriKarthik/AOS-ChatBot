@@ -192,12 +192,119 @@ div[data-testid="stButton"] > button {
     background:#ffffff !important;
 }
 
-/* Sidebar */
+/* ChatGPT-style Dilytics sidebar */
 section[data-testid="stSidebar"] {
-    background:linear-gradient(180deg,#f3f9ff 0%,#ffffff 100%);
-    border-right:1px solid #dcecff;
+    background:#f7f7f8 !important;
+    border-right:1px solid #e5e7eb !important;
+    min-width:280px !important;
+    width:280px !important;
 }
-section[data-testid="stSidebar"] .stMarkdown { color:#173f6f; }
+
+section[data-testid="stSidebar"] > div {
+    background:#f7f7f8 !important;
+    padding:10px 10px 18px 10px !important;
+}
+
+section[data-testid="stSidebar"] .stMarkdown,
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] p {
+    color:#1f2937 !important;
+}
+
+/* Sidebar header */
+.dly-sidebar-brand {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 8px 10px 8px;
+    margin-bottom:2px;
+}
+.dly-sidebar-brand-name {
+    font-size:1.08rem;
+    font-weight:700;
+    color:#111827;
+    letter-spacing:-.01em;
+}
+.dly-sidebar-brand-icon {
+    color:#ef4444;
+    margin-right:6px;
+}
+
+/* Search */
+section[data-testid="stSidebar"] [data-testid="stTextInput"] input {
+    background:#ffffff !important;
+    border:1px solid #e5e7eb !important;
+    border-radius:9px !important;
+    color:#111827 !important;
+    height:38px !important;
+    font-size:.88rem !important;
+}
+section[data-testid="stSidebar"] [data-testid="stTextInput"] input:focus {
+    border-color:#c7c7c7 !important;
+    box-shadow:0 0 0 1px #d1d5db !important;
+}
+
+/* Sidebar buttons */
+section[data-testid="stSidebar"] .stButton > button {
+    min-height:40px !important;
+    height:40px !important;
+    border:0 !important;
+    border-radius:9px !important;
+    background:transparent !important;
+    color:#1f2937 !important;
+    font-size:.88rem !important;
+    font-weight:400 !important;
+    box-shadow:none !important;
+    text-align:left !important;
+    padding:0 10px !important;
+    transition:background .15s ease, transform .1s ease !important;
+}
+section[data-testid="stSidebar"] .stButton > button:hover {
+    background:#ececef !important;
+    border:0 !important;
+    color:#111827 !important;
+}
+section[data-testid="stSidebar"] .stButton > button:active {
+    transform:scale(.99);
+}
+
+/* Primary New Chat */
+section[data-testid="stSidebar"] .stButton[kind="primary"] > button {
+    background:#ffffff !important;
+    border:1px solid #d9d9de !important;
+    color:#111827 !important;
+    font-weight:600 !important;
+    box-shadow:0 1px 2px rgba(0,0,0,.04) !important;
+}
+section[data-testid="stSidebar"] .stButton[kind="primary"] > button:hover {
+    background:#f1f1f3 !important;
+}
+
+/* Section labels */
+.dly-sidebar-section {
+    padding:10px 8px 5px 8px;
+    color:#6b7280;
+    font-size:.74rem;
+    font-weight:600;
+    letter-spacing:.01em;
+}
+
+/* Session buttons */
+.dly-session-active {
+    background:#ececef !important;
+    border-radius:9px;
+}
+.dly-sidebar-divider {
+    height:1px;
+    background:#e5e7eb;
+    margin:10px 4px;
+}
+
+/* Keep the native Streamlit sidebar collapse affordance visible and stable. */
+button[aria-label*="Collapse sidebar"],
+button[aria-label*="Expand sidebar"] {
+    z-index:1000 !important;
+}
 
 /* File uploader */
 [data-testid="stFileUploader"] {
@@ -2849,6 +2956,12 @@ if session is None:
 if "chat_sessions" not in st.session_state:
     st.session_state.chat_sessions = {}
 
+if "pinned_sessions" not in st.session_state:
+    st.session_state.pinned_sessions = set()
+
+if "sidebar_search" not in st.session_state:
+    st.session_state.sidebar_search = ""
+
 if "current_session_id" not in st.session_state:
     init_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     st.session_state.current_session_id = init_id
@@ -2936,43 +3049,132 @@ def display_chart_tab(df: pd.DataFrame, key_prefix: str = ""):
 # 5. SIDEBAR
 # ===================================================================
 with st.sidebar:
-    st.markdown("### ⚡ Dilytics AI")
+    # ChatGPT-inspired top area: brand + native Streamlit open/close control.
     st.markdown(
-        '<span class="status-pill">● Cortex Analyst Live</span>',
+        """
+        <div class="dly-sidebar-brand">
+            <div class="dly-sidebar-brand-name">
+                <span class="dly-sidebar-brand-icon">⚡</span>Dilytics AI
+            </div>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
-    st.write("")
 
-    if st.button("➕ New Chat", use_container_width=True, type="primary"):
+    # Search conversations.
+    search_value = st.text_input(
+        "Search",
+        value=st.session_state.sidebar_search,
+        placeholder="⌕  Search",
+        label_visibility="collapsed",
+        key="dly_sidebar_search_box",
+    )
+    st.session_state.sidebar_search = search_value.strip()
+
+    # New chat.
+    if st.button("✎  New chat", use_container_width=True, type="primary", key="sidebar_new_chat"):
         new_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         st.session_state.current_session_id = new_id
         st.session_state.chat_sessions[new_id] = {
-            "title": f"Chat {len(st.session_state.chat_sessions) + 1}",
+            "title": "New Conversation",
             "messages": [],
         }
+        st.session_state.pinned_sessions.discard(new_id)
         st.rerun()
 
-    st.markdown("---")
-    st.markdown("##### 🕒 Recent Conversations")
+    st.markdown('<div class="dly-sidebar-divider"></div>', unsafe_allow_html=True)
 
+    # Pinned conversations.
+    st.markdown('<div class="dly-sidebar-section">Pinned</div>', unsafe_allow_html=True)
+
+    pinned_items = [
+        (s_id, s_data)
+        for s_id, s_data in st.session_state.chat_sessions.items()
+        if s_id in st.session_state.pinned_sessions
+    ]
+
+    if not pinned_items:
+        st.caption("No pinned conversations")
+    else:
+        for s_id, s_data in reversed(pinned_items):
+            title = s_data.get("title", "New Conversation")
+            if len(title) > 30:
+                title = title[:28] + "…"
+            if st.button(
+                f"☆  {title}",
+                key=f"pinned_{s_id}",
+                use_container_width=True,
+            ):
+                st.session_state.current_session_id = s_id
+                st.rerun()
+
+    # Recent conversations.
+    st.markdown('<div class="dly-sidebar-section">Recents</div>', unsafe_allow_html=True)
+
+    query = st.session_state.sidebar_search.lower()
+    recent_items = []
     for s_id, s_data in reversed(list(st.session_state.chat_sessions.items())):
-        is_active = s_id == st.session_state.current_session_id
-        label = s_data["title"]
-        if len(label) > 20:
-            label = label[:18] + "..."
+        title = s_data.get("title", "New Conversation")
+        if query and query not in title.lower():
+            continue
+        recent_items.append((s_id, s_data))
 
-        if st.button(
-            f"{'👉 ' if is_active else '🗨️ '}{label}",
-            key=f"sess_{s_id}",
-            use_container_width=True,
-        ):
-            st.session_state.current_session_id = s_id
-            st.rerun()
+    if not recent_items:
+        st.caption("No conversations found")
+    else:
+        for s_id, s_data in recent_items:
+            is_active = s_id == st.session_state.current_session_id
+            title = s_data.get("title", "New Conversation")
+            if len(title) > 30:
+                title = title[:28] + "…"
 
-    st.markdown("---")
+            c1, c2 = st.columns([0.86, 0.14], gap="small")
+            with c1:
+                if st.button(
+                    f"{'● ' if is_active else '○ '}{title}",
+                    key=f"sess_{s_id}",
+                    use_container_width=True,
+                ):
+                    st.session_state.current_session_id = s_id
+                    st.rerun()
+            with c2:
+                is_pinned = s_id in st.session_state.pinned_sessions
+                if st.button(
+                    "★" if is_pinned else "☆",
+                    key=f"pin_{s_id}",
+                    use_container_width=True,
+                    help="Unpin conversation" if is_pinned else "Pin conversation",
+                ):
+                    if is_pinned:
+                        st.session_state.pinned_sessions.discard(s_id)
+                    else:
+                        st.session_state.pinned_sessions.add(s_id)
+                    st.rerun()
 
-    if st.button("🗑️ Clear All Sessions", use_container_width=True):
+    st.markdown('<div class="dly-sidebar-divider"></div>', unsafe_allow_html=True)
+
+    # Reset only the current conversation.
+    if st.button(
+        "↻  Reset chat",
+        use_container_width=True,
+        key="sidebar_reset_chat",
+        help="Clear messages from the current conversation",
+    ):
+        current_id = st.session_state.current_session_id
+        if current_id in st.session_state.chat_sessions:
+            st.session_state.chat_sessions[current_id]["messages"] = []
+            st.session_state.chat_sessions[current_id]["title"] = "New Conversation"
+        st.rerun()
+
+    # Clear every conversation.
+    if st.button(
+        "⌫  Clear chat history",
+        use_container_width=True,
+        key="sidebar_clear_history",
+        help="Delete all saved conversations",
+    ):
         st.session_state.chat_sessions = {}
+        st.session_state.pinned_sessions = set()
         init_id = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
         st.session_state.current_session_id = init_id
         st.session_state.chat_sessions[init_id] = {
@@ -2981,10 +3183,9 @@ with st.sidebar:
         }
         st.rerun()
 
-
-# ===================================================================
-    st.markdown("---")
-    st.markdown("##### 📄 Analyze an Uploaded Document")
+    # Keep the existing document workflow below the conversation controls.
+    st.markdown('<div class="dly-sidebar-divider"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="dly-sidebar-section">📄 Analyze an Uploaded Document</div>', unsafe_allow_html=True)
 
     uploaded_doc = st.file_uploader(
         "Upload CSV, Excel, PDF or Word",
@@ -2994,7 +3195,7 @@ with st.sidebar:
     )
 
     if st.button(
-        "🔍 Analyze Document",
+        "🔍  Analyze Document",
         use_container_width=True,
         disabled=uploaded_doc is None,
         key="analyze_uploaded_document",
@@ -3017,16 +3218,9 @@ with st.sidebar:
                 if doc_type == "table":
                     prepare_uploaded_table(doc_df)
                 elif doc_type == "text":
-                    # Word (.docx) uses the trial-safe local document Q&A path below.
-                    # Keep PDF on the existing AI_COMPLETE path. The working
-                    # Excel/CSV Cortex Analyst functionality is untouched.
                     if uploaded_doc.name.lower().endswith(".pdf"):
                         _upload_document_to_stage(uploaded_doc)
 
-            # Store a pending chat event. The chatbot consumes this AFTER
-            # its session/messages object has been initialized. This is more
-            # reliable than appending directly here because this page calls
-            # st.rerun() and then stops before the chatbot section.
             st.session_state.pending_document_chat_event = {
                 "role": "assistant",
                 "content": f"📄 **Document analyzed:** `{uploaded_doc.name}`\n\n{doc_message}",
@@ -3045,25 +3239,23 @@ with st.sidebar:
             st.error(f"Document analysis failed: {e}")
 
     if st.session_state.uploaded_document_name:
-        st.caption(
-            f"Loaded: `{st.session_state.uploaded_document_name}`"
-        )
+        st.caption(f"Loaded: `{st.session_state.uploaded_document_name}`")
         if st.button(
-            "✖ Remove Uploaded Document",
+            "✖  Remove Uploaded Document",
             use_container_width=True,
             key="remove_uploaded_document",
         ):
             _drop_uploaded_table()
-            st.session_state.uploaded_document = None
             st.session_state.uploaded_document_name = None
-            st.session_state.uploaded_document_df = None
-            st.session_state.uploaded_document_text = ""
             st.session_state.uploaded_document_type = None
+            st.session_state.uploaded_document_df = None
+            st.session_state.uploaded_document_text = None
+            st.session_state.uploaded_document = None
             st.session_state.uploaded_document_table = None
             st.session_state.uploaded_document_semantic_model = None
-            st.session_state.uploaded_document_stage = None
-            st.session_state.uploaded_document_stage_file = None
             st.rerun()
+
+
 # 6. MAIN HEADER
 # ===================================================================
 # One continuous header container: brand/tagline + navigation all live
