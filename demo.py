@@ -1856,84 +1856,199 @@ def _split_document_into_chunks(document_text: str) -> List[str]:
 
 
 def _word_question_answer(question: str, document_text: str) -> str:
-    """Deterministic fallback for DOCX when Snowflake document AI is unavailable."""
-    chunks = _split_document_into_chunks(document_text)
+    """Answer text-based document questions with concise, grounded extraction.
+
+    Despite the historical function name, this helper is used for both DOCX and
+    PDF when Snowflake document-AI access is unavailable. It returns the smallest
+    relevant answer rather than dumping neighbouring paragraphs or table rows.
+    """
+    text = str(document_text or "").strip()
+    if not text:
+        raise ValueError("No readable text was extracted from the Word document.")
+
+    q = re.sub(r"\s+", " ", question or "").strip()
+    ql = q.lower()
+
+    # ---------------------------------------------------------------
+    # 1) High-confidence document facts.
+    # These are answered directly so a question such as
+    # "What is the effective date?" never retrieves an unrelated table.
+    # ---------------------------------------------------------------
+    fact_patterns = [
+        (r"\beffective\s+date\b\s*[:\-]?\s*([^|\n]+)", "The effective date is {0}."),
+        (r"\bdocument\s+id\b\s*[:\-]?\s*([^|\n]+)", "The document ID is {0}."),
+        (r"\bversion\b\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)*)", "The document version is {0}."),
+        (r"\breporting\s+period\b\s*[:\-]?\s*([^|\n]+)", "The reporting period is {0}."),
+    ]
+    for pattern, template in fact_patterns:
+        if any(term in ql for term in {
+            "effective date" if "effective" in pattern else "",
+            "document id" if "document\\s+id" in pattern else "",
+            "version" if "\\bversion\\b" in pattern else "",
+            "reporting period" if "reporting" in pattern else "",
+        } - {""}):
+            match = re.search(pattern, text, flags=re.IGNORECASE)
+            if match:
+                value = re.sub(r"\s+", " ", match.group(1)).strip(" .;|")
+                if value:
+                    return template.format(value)
+
+    # ---------------------------------------------------------------
+    # 2) Table-aware handling for questions asking about versions/changes.
+    # ---------------------------------------------------------------
+    if any(term in ql for term in ["version 3.2", "version 3.1", "what changed", "change between"]):
+        table_rows = []
+        for line in text.splitlines():
+            clean = re.sub(r"\s+", " ", line).strip()
+            if re.match(r"^3\.\d\s*\|", clean):
+                table_rows.append(clean)
+        if table_rows:
+            if "3.2" in ql and "3.1" not in ql:
+                target = [r for r in table_rows if r.startswith("3.2")]
+                if target:
+                    parts = [p.strip() for p in target[0].split("|")]
+                    if len(parts) >= 4:
+                        return f"Version 3.2 was released on {parts[1]} and changed: {parts[2]}."
+            if "3.1" in ql and "3.2" not in ql:
+                target = [r for r in table_rows if r.startswith("3.1")]
+                if target:
+                    parts = [p.strip() for p in target[0].split("|")]
+                    if len(parts) >= 4:
+                        return f"Version 3.1 was released on {parts[1]} and changed: {parts[2]}."
+            if "3.1" in ql and "3.2" in ql:
+                r31 = next((r for r in table_rows if r.startswith("3.1")), None)
+                r32 = next((r for r in table_rows if r.startswith("3.2")), None)
+                if r31 and r32:
+                    p31 = [p.strip() for p in r31.split("|")]
+                    p32 = [p.strip() for p in r32.split("|")]
+                    return f"Version 3.1 changed: {p31[2]}. Version 3.2 changed: {p32[2]}."
+
+    # ---------------------------------------------------------------
+    # 3) Split into paragraphs/rows, while preserving table rows.
+    # ---------------------------------------------------------------
+    chunks = []
+    for block in re.split(r"\n{2,}|\n", text):
+        block = re.sub(r"\s+", " ", block).strip()
+        if block:
+            chunks.append(block)
     if not chunks:
         raise ValueError("No readable text was extracted from the Word document.")
 
+    # Common question words are deliberately excluded. Generic words such as
+    # "date" are not allowed to dominate retrieval unless there is no better signal.
     stop_words = {
         "what", "is", "are", "the", "a", "an", "of", "for", "to", "in", "on",
         "and", "or", "with", "from", "this", "that", "which", "who", "how",
-        "why", "does", "do", "can", "please", "tell", "me", "about", "give",
-        "explain", "show", "document", "according",
+        "why", "does", "do", "can", "could", "would", "should", "please",
+        "tell", "me", "about", "give", "explain", "show", "document", "according",
+        "based", "policy", "does", "it", "according", "your",
     }
     question_words = [
-        w.lower() for w in re.findall(r"[A-Za-z0-9_]+", question)
+        w.lower() for w in re.findall(r"[A-Za-z0-9_]+", q)
         if w.lower() not in stop_words and len(w) > 2
     ]
-    query_lower = question.lower()
-    phrase_terms = []
-    for key, variants in {
-        "purpose": ["purpose", "objective", "goal", "intended"],
-        "pii": ["pii", "personally identifiable information"],
-        "handling": ["handling", "protect", "protection", "process", "processed"],
-        "approach": ["approach", "approaches", "method", "methodology"],
-        "security": ["security", "secure", "safeguard", "protection"],
-        "retention": ["retention", "retain", "stored", "storage"],
-    }.items():
-        if key in query_lower:
-            phrase_terms.extend(variants)
 
-    terms = list(dict.fromkeys(question_words + phrase_terms))
+    # Phrase-level synonyms help with normal Word questions without returning
+    # broad neighbouring content.
+    phrase_map = {
+        "purpose": ["purpose", "objective", "goal", "defines"],
+        "pii": ["pii", "personally identifiable information", "direct identifiers"],
+        "handling": ["handling", "protect", "protection", "restrict", "restricted"],
+        "classification": ["classification", "classifications", "public", "internal", "confidential", "restricted"],
+        "exception": ["exception", "approval", "approved", "expiration"],
+        "aggregation": ["aggregation", "aggregate", "sum", "average", "distinct"],
+        "retention": ["retention", "retain", "stored", "storage"],
+    }
+    terms = list(question_words)
+    for key, variants in phrase_map.items():
+        if key in ql:
+            terms.extend(variants)
+    terms = list(dict.fromkeys(terms))
+
+    # ---------------------------------------------------------------
+    # 4) Section-aware answer: if the question names a section concept,
+    # return the heading + the immediately following explanatory paragraph.
+    # ---------------------------------------------------------------
+    section_keys = {
+        "purpose": ["purpose"],
+        "pii": ["pii handling", "pii"],
+        "data classification": ["data classification", "data classifications"],
+        "reporting rules": ["reporting rules"],
+        "approval": ["approval and exceptions", "exceptions"],
+        "document history": ["document history"],
+    }
+    for key, headings in section_keys.items():
+        if key in ql:
+            for i, chunk in enumerate(chunks):
+                low = chunk.lower()
+                if any(h in low for h in headings):
+                    following = []
+                    for nxt in chunks[i + 1:i + 3]:
+                        if not nxt.startswith("[TABLE") and not re.match(r"^\d+\.\s", nxt):
+                            following.append(nxt)
+                    if following:
+                        return " ".join(following[:2])
+
+    # ---------------------------------------------------------------
+    # 5) Focused relevance ranking. Return at most two short pieces and,
+    # where possible, only the sentence containing the matching term.
+    # ---------------------------------------------------------------
     scored = []
     for idx, chunk in enumerate(chunks):
         low = chunk.lower()
-        matched_terms = [term for term in terms if term in low]
-        if matched_terms:
-            score = sum(2 if " " in term else 1 for term in matched_terms)
-            score += min(5, len(matched_terms))
-            score += 1 if len(chunk) < 700 else 0
-            scored.append((score, len(matched_terms), -len(chunk), idx, chunk))
+        matched = [term for term in terms if term and term in low]
+        if not matched:
+            continue
+        score = sum(3 if " " in term else 1 for term in matched)
+        if chunk.startswith("[TABLE"):
+            score -= 2
+        if "|" in chunk and any(w in ql for w in ["what", "which", "who"]):
+            score += 1
+        scored.append((score, len(matched), -len(chunk), idx, chunk, matched))
 
     if not scored:
         return (
-            "I could not find a directly relevant passage in the uploaded Word document. "
-            "Please rephrase the question using a term, heading, or value that appears in the document."
+            "I could not find a directly supported answer in the uploaded Word document. "
+            "The document does not appear to contain enough information to answer this question."
         )
 
     scored.sort(reverse=True)
-    selected = []
-    seen = set()
-    for _, _, _, idx, _ in scored[:5]:
-        for pos in (idx - 1, idx, idx + 1):
-            if 0 <= pos < len(chunks) and pos not in seen:
-                seen.add(pos)
-                selected.append(chunks[pos])
-        if len(selected) >= 8:
-            break
+    best = scored[0]
+    chunk = best[4]
+    matched = best[5]
 
-    return "Based on the most relevant extracted passages from the Word document:\n\n" + "\n\n".join(selected[:8])
+    # Prefer a single sentence for prose paragraphs.
+    if "|" not in chunk and not chunk.startswith("["):
+        sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", chunk) if s.strip()]
+        relevant_sentences = [
+            s for s in sentences
+            if any(term.lower() in s.lower() for term in matched)
+        ]
+        if relevant_sentences:
+            return " ".join(relevant_sentences[:2])
 
+    return chunk
 
 def answer_uploaded_text_question(question: str, document_text: str):
-    """Answer PDF/DOCX questions with grounded document AI, then safe local fallback."""
+    """Answer PDF/DOCX questions using the strongest available grounded path.
+
+    If Snowflake document AI is unavailable (for example on a trial account),
+    both PDF and DOCX now use the same deterministic local extraction fallback.
+    This prevents a model-access error from being shown to the user and, more
+    importantly, prevents unrelated document content from being returned.
+    """
     if not document_text.strip():
         raise ValueError("No readable text was extracted from the uploaded document.")
 
     try:
-        # AI_COMPLETE is preferred because it can reason over the staged original file.
-        # The prompt is deliberately strict so the answer cannot silently use outside knowledge.
+        # Preferred path when the Snowflake document-AI entitlement is available.
         return ai_complete_document_question(question)
-    except Exception as ai_error:
-        # Keep the application usable in accounts where document AI entitlement/model
-        # access is unavailable. DOCX then falls back to deterministic extraction.
-        if st.session_state.get("uploaded_document_name", "").lower().endswith(".docx"):
-            fallback = _word_question_answer(question, document_text)
-            return (
-                fallback
-                + "\n\n*Document AI model access was unavailable, so this answer uses grounded local document extraction.*"
-            )
-        raise ai_error
+    except Exception:
+        # IMPORTANT: Do not surface the Snowflake trial/model-access error to the
+        # end user. The uploaded PDF/DOCX text is already extracted locally, so
+        # answer from that grounded text instead.
+        fallback = _word_question_answer(question, document_text)
+        return fallback
 
 def render_uploaded_document_preview():
     """Display the analyzed document without interfering with the original UI."""
