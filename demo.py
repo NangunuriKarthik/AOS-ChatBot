@@ -1723,7 +1723,8 @@ def _top_nav():
 
       .st-key-dly_main_header > div > [data-testid="column"]:last-child [data-testid="column"] {
           min-width: 0 !important;
-          flex: 0 1 auto !important;
+          flex: 1 1 0 !important;
+          width: 0 !important;
       }
 
       .st-key-top_home,
@@ -1731,33 +1732,26 @@ def _top_nav():
       .st-key-top_about {
           display: flex !important;
           align-items: center !important;
-          justify-content: center !important;
-          width: auto !important;
+          justify-content: stretch !important;
+          width: 100% !important;
           min-width: 0 !important;
       }
 
       .st-key-top_home [data-testid="stButton"],
       .st-key-top_docs [data-testid="stButton"],
       .st-key-top_about [data-testid="stButton"] {
-          width: auto !important;
+          width: 100% !important;
+          min-width: 0 !important;
       }
 
-      /* Exact reference-like proportions. */
-      .st-key-top_home [data-testid="stButton"] > button {
-          width: 144px !important;
-          max-width: 100% !important;
-          box-sizing: border-box !important;
-      }
-
-      .st-key-top_docs [data-testid="stButton"] > button {
-          width: 200px !important;
-          max-width: 100% !important;
-          box-sizing: border-box !important;
-      }
-
+      /* Fluid buttons: their width is determined by the available
+         navigation space, never by a fixed pixel value. */
+      .st-key-top_home [data-testid="stButton"] > button,
+      .st-key-top_docs [data-testid="stButton"] > button,
       .st-key-top_about [data-testid="stButton"] > button {
-          width: 223px !important;
+          width: 100% !important;
           max-width: 100% !important;
+          min-width: 0 !important;
           box-sizing: border-box !important;
       }
 
@@ -1910,23 +1904,6 @@ def _top_nav():
               padding: 10px 24px !important;
           }
 
-          .st-key-dly_main_header [data-testid="column"]:last-child {
-              right: 24px !important;
-              max-width: calc(100% - 270px) !important;
-          }
-
-          .st-key-top_home [data-testid="stButton"] > button {
-              width: 112px !important;
-          }
-
-          .st-key-top_docs [data-testid="stButton"] > button {
-              width: 145px !important;
-          }
-
-          .st-key-top_about [data-testid="stButton"] > button {
-              width: 150px !important;
-          }
-
           .st-key-top_home [data-testid="stButton"] > button,
           .st-key-top_docs [data-testid="stButton"] > button,
           .st-key-top_about [data-testid="stButton"] > button {
@@ -1950,18 +1927,6 @@ def _top_nav():
       @media (max-width: 900px) {
           .st-key-dly_main_header > div > [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] {
               gap: 6px !important;
-          }
-
-          .st-key-top_home [data-testid="stButton"] > button {
-              width: 96px !important;
-          }
-
-          .st-key-top_docs [data-testid="stButton"] > button {
-              width: 122px !important;
-          }
-
-          .st-key-top_about [data-testid="stButton"] > button {
-              width: 128px !important;
           }
 
           .st-key-top_home [data-testid="stButton"] > button,
@@ -1989,26 +1954,9 @@ def _top_nav():
               padding: 10px 18px !important;
           }
 
-          .st-key-dly_main_header [data-testid="column"]:last-child {
-              right: 18px !important;
-              max-width: calc(100% - 210px) !important;
-          }
-
           .dly-reference-logo {
               width: 180px !important;
               height: 54px !important;
-          }
-
-          .st-key-top_home [data-testid="stButton"] > button {
-              width: 112px !important;
-          }
-
-          .st-key-top_docs [data-testid="stButton"] > button {
-              width: 145px !important;
-          }
-
-          .st-key-top_about [data-testid="stButton"] > button {
-              width: 150px !important;
           }
 
           .st-key-top_home [data-testid="stButton"] > button,
@@ -2033,26 +1981,28 @@ def _top_nav():
 
       @media (max-width: 700px) {
           .st-key-dly_main_header {
-              padding: 8px 10px !important;
-              min-height: 52px !important;
+              padding: 10px !important;
+              min-height: 0 !important;
           }
 
+          /* At narrow widths/very high zoom, place the logo above the
+             navigation instead of squeezing or overlapping the buttons. */
           .st-key-dly_main_header > div {
-              gap: 6px !important;
+              gap: 10px !important;
+              flex-direction: column !important;
           }
 
-          .st-key-dly_main_header > div > [data-testid="column"]:first-child {
-              flex: 0 0 34% !important;
-              width: 34% !important;
-          }
-
+          .st-key-dly_main_header > div > [data-testid="column"]:first-child,
           .st-key-dly_main_header > div > [data-testid="column"]:last-child {
-              flex: 0 0 66% !important;
-              width: 66% !important;
+              flex: 0 0 100% !important;
+              width: 100% !important;
+              max-width: 100% !important;
           }
 
           .st-key-dly_main_header > div > [data-testid="column"]:last-child [data-testid="stHorizontalBlock"] {
-              gap: 4px !important;
+              width: 100% !important;
+              gap: 6px !important;
+              flex-wrap: nowrap !important;
           }
 
           .dly-reference-logo {
@@ -2060,47 +2010,26 @@ def _top_nav():
               height: 42px !important;
           }
 
-          .st-key-top_home {
-              margin-right: 5px !important;
-          }
-
-          .st-key-top_docs {
-              margin-right: 5px !important;
-          }
-
-          .st-key-top_home [data-testid="stButton"] > button {
-              width: 70px !important;
-          }
-
-          .st-key-top_docs [data-testid="stButton"] > button {
-              width: 88px !important;
-          }
-
-          .st-key-top_about [data-testid="stButton"] > button {
-              width: 96px !important;
-          }
-
           .st-key-top_home [data-testid="stButton"] > button,
           .st-key-top_docs [data-testid="stButton"] > button,
           .st-key-top_about [data-testid="stButton"] > button {
-              height: 38px !important;
-              min-height: 38px !important;
+              height: 44px !important;
+              min-height: 44px !important;
               border-radius: 9px !important;
-              padding: 0 4px !important;
-              font-size: .56rem !important;
+              padding: 0 6px !important;
+              font-size: .64rem !important;
               box-sizing: border-box !important;
           }
 
           .st-key-top_home [data-testid="stButton"] > button::before,
           .st-key-top_docs [data-testid="stButton"] > button::before,
           .st-key-top_about [data-testid="stButton"] > button::before {
-              width: 19px;
-              height: 19px;
-              flex-basis: 19px;
-              margin-right: 4px;
-              font-size: 11px;
+              width: 22px;
+              height: 22px;
+              flex-basis: 22px;
+              margin-right: 5px;
+              font-size: 13px;
           }
-      }
     </style>
     """, unsafe_allow_html=True)
 
@@ -2124,8 +2053,10 @@ def _top_nav():
             )
 
         with nav_col:
+            # Fluid proportions: the three buttons always share the
+            # available navigation width and therefore cannot overlap.
             n1, n2, n3 = st.columns(
-                [144, 200, 223],
+                [0.78, 1.0, 1.12],
                 gap="small",
                 vertical_alignment="center",
             )
