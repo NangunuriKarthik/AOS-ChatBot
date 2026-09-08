@@ -46,7 +46,7 @@ def _robot_data_uri():
 
 st.set_page_config(
     page_title="Dilytics Enterprise AI",
-    page_icon="/mnt/data/ab9782f0-7fe3-457d-ad6f-6cfd169bc10c.png",
+    page_icon="Screenshot 2026-09-08 151031.png",
     layout="wide",
 )
 
